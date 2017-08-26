@@ -1,5 +1,48 @@
+TODO:
+
+DONE -remove LCD stuff
+DONE -change all 1.0 to 1.0f --- to make sure it's 32-bit floats and not 64-bit floats.
+DONE -Rename structs/variables so they make more sense
+DONE -Put osc.h structs into main.h --> so that user_interface and init_io can write to them and osc can read from them.
+
+-Change pins - buttons
+	user_interface.c			update_state()
+-Change pins - pots
+
+-remove volume knob
+
+
+
+-see if 2nd oscillator will work
+
+-Use buttons to cycle through waveforms - instead of selector.
+	initial_io.c		init_push_buttons()
+	user_interface.c	update_selector_state()
+	
+
+	
 ====================================
-PINS
+PINS - NEW
+====================================
+
+	Oscillators - Pots
+	------------------------
+	A0		VCO-Amplitude			ADCBuffer[1]		** NOTE: same pin as pushbutton **
+	A1		VCO-Frequency			ADCBuffer[0]	
+	
+	A2		LFO-Amplitude			ADCBuffer[2]
+	A3		LFO-Frequency			ADCBuffer[3]	
+
+
+	Buttons
+	------------------------
+	E7		vco waveform type
+	E8		lfo waveform type
+	E9		lfo modulation type
+	E10		adsr modulation type
+
+====================================
+PINS - OLD
 ====================================
 
 	Gain (Maybe)

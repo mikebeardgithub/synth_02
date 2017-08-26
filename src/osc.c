@@ -26,25 +26,28 @@ osc_setting osc =
 
 	.vco_wav = sine,
 	.lfo_wav = sine,		// other2 means OFF, for now.
-	.mod = VCOfreq,
+	// .mod = VCOfreq,
+
+	.am_mod = OFF,
+	.fm_mod = OFF,
 
 	.vco_amp = VCO_AMP,
 	.vco_amp2 = VCO_AMP,
 
-	.lfo_amp = 1.0,
-	.lfo_amp_am = 1.0,
-	.lfo_amp_fm = 1.0,
+	.lfo_amp = 1.0f,
+	.lfo_amp_am = 1.0f,
+	.lfo_amp_fm = 1.0f,
 
-	.square_min = 0.4,
-	.square_max = 1.0,
+	.square_min = 0.4f,
+	.square_max = 1.0f,
 
-	.sawtooth_vco_min = 0.0,
-	.sawtooth_vco_max = 1.0,
+	.sawtooth_vco_min = 0.0f,
+	.sawtooth_vco_max = 1.0f,
 
-	.sawtooth_lfo_min = 0.0,
-	.sawtooth_lfo_max = 1.0,
+	.sawtooth_lfo_min = 0.0f,
+	.sawtooth_lfo_max = 1.0f,
 
-	.fm_mod_level = 0.6
+	.fm_mod_level = 0.6f
 };
 
 volatile uint32_t sample_count_adsr = 0;
@@ -93,21 +96,25 @@ volatile float32_t delta = 0.0;
  * For second half, start = buff_len/2; end = LENGTH_BUFFER
  */
 
-volatile float32_t theta_vco = 0.0;
-// volatile float32_t theta_vco2 = 0.0;
-volatile float32_t theta_lfo = 0.0;
-volatile float32_t theta_adsr = 1.0;
+volatile float32_t theta_vco = 0.0f;
+// volatile float32_t theta_vco2 = 0.0f;
+volatile float32_t theta_lfo = 0.0f;
+volatile float32_t theta_adsr = 1.0f;
 
-volatile uint16_t testflag =  0;
+volatile uint16_t testflag = 0;
 
-// Get ADSR values.
-volatile adsr_setting adsr_settings;			// Fall back on this.
+volatile adsr_setting adsr_settings;
 
 void generate_waveforms(uint16_t start, uint16_t end)
 {
-	osc.vco_wav = vfo_state;				// VCO wave type.
-	osc.lfo_wav = lfo_state;				// LFO wave type.
-	osc.mod = current_menu_state.lfo_mod;	// Modulation type.
+	osc.vco_wav = vco_wave;				// VCO wave type.
+	osc.lfo_wav = lfo_wave;				// LFO wave type.
+
+	osc.am_mod = OFF; // TODO: *** get value of pushbutton ***
+	osc.fm_mod = OFF; // TODO: *** get value of pushbutton ***
+
+	osc.am_mod = lfo_mod.am_mod;
+	osc.fm_mod = lfo_mod.fm_mod;
 
 	// osc.vco_wav = sine;				// TODO: comment-out when adding lcd and buttons
 	// osc.lfo_wav = sine;				// TODO: comment-out when adding lcd and buttons
@@ -165,7 +172,14 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	// osc.lfo_freq = pseudo_log(osc.lfo_freq, ???);
 
 	volatile uint32_t i = 0;
-	adsr_settings.mod = current_menu_state.adsr_mod;
+	// adsr_settings.am_mod = OFF;
+	// adsr_settings.fm_mod = OFF;
+	// adsr_settings.am_mod = current_menu_state.adsr_mod;
+	// adsr_settings.fm_mod = current_menu_state.adsr_mod;
+	adsr_settings.am_mod = adsr_mod.am_mod;
+	adsr_settings.fm_mod = adsr_mod.fm_mod;
+
+
 	// adsr_settings.mod = VCOamp;						// TODO: turn this off when LCD activated.
 	// adsr_settings.mod = DualMode_VCO;
 	// adsr_settings.mod = NO_MOD;
@@ -177,7 +191,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	volatile float32_t rads_per_sample_lfo = osc.lfo_freq / ONE_SECOND;		// Radians to increment for each iteration.
 
 	// Fill adsr buffer.
-	if(adsr_settings.mod != NO_MOD)
+	if(adsr_settings.am_mod == ON || adsr_settings.fm_mod == ON)
 	{
 		adsr(start, end);
 	}
@@ -196,7 +210,8 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	// Square LFO
 	else if(osc.lfo_wav == square)
 	{
-		if(osc.mod == VCOamp || osc.mod == DualMode_VCO)
+		// If osc modulation contains am
+		if(osc.am_mod == ON)
 		{
 			// AM
 			for(i = start; i < end; i++)
@@ -205,7 +220,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 				buffer_lfo_float[i] = gen_square_angle(theta_lfo);	// TODO: offset??
 			}
 		}
-		else if(osc.mod == VCOfreq)
+		else if(osc.fm_mod == ON)
 		{
 			// FM
 			for(i = start; i < end; i++)
@@ -221,7 +236,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	else if(osc.lfo_wav == sawtooth)
 	{
 
-		if(osc.mod == VCOamp || osc.mod == DualMode_VCO)
+		if(osc.am_mod == ON)
 		{
 			for(i = start; i < end; i++)
 			{
@@ -231,7 +246,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		}
 
 		// If FM mod, need integral of modulating signal.  Integral of ramp is right side of parabola.
-		else if(osc.mod == VCOfreq)
+		else if(osc.fm_mod == ON)
 		{
 			for(i = start; i < end; i++)
 			{
@@ -244,7 +259,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	// Triangle LFO
 	else if(osc.lfo_wav == triangle)
 	{
-		if(osc.mod == VCOamp || osc.mod == DualMode_VCO)
+		if(osc.am_mod == ON)
 		{
 			for(i = start; i < end; i++)
 			{
@@ -254,7 +269,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		}
 
 		// If FM mod, need integral of modulating signal.
-		else if(osc.mod == VCOfreq)
+		else if(osc.fm_mod == ON)
 		{
 			for(i = start; i < end; i++)
 			{
@@ -265,10 +280,6 @@ void generate_waveforms(uint16_t start, uint16_t end)
 
 	}
 
-//	NO_MOD,
-//	VCOfreq,
-//	VCOamp,
-
 	// Sine VCO
 	if(osc.vco_wav == sine)
 	{
@@ -277,7 +288,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		{
 			theta_vco = theta_vco + rads_per_sample_vco;
 			// theta_vco2 = theta_vco2 + rads_per_sample_vco2;
-			if(osc.mod == VCOfreq || osc.mod == DualMode_VCO)
+			if(osc.fm_mod == ON)
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
 				// buffer_output[i] = 0.3*osc.vco_amp + 0.3*osc.vco_amp*arm_sin_f32(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
@@ -305,7 +316,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		{
 			theta_vco = theta_vco + rads_per_sample_vco;
 
-			if(osc.mod == VCOfreq || osc.mod == DualMode_VCO)
+			if(osc.fm_mod == ON)
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
 			}
@@ -324,7 +335,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		{
 			theta_vco = theta_vco + rads_per_sample_vco;
 
-			if(osc.mod == VCOfreq || osc.mod == DualMode_VCO)
+			if(osc.fm_mod == ON)
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
 			}
@@ -343,7 +354,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		for(i = start; i < end; i++)
 		{
 			theta_vco = theta_vco + rads_per_sample_vco;
-			if(osc.mod == VCOfreq || osc.mod == DualMode_VCO)
+			if(osc.fm_mod == ON)
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
 			}
@@ -356,7 +367,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	}
 
 	// AM Modulate VCO with LFO
-	if(osc.mod == VCOamp || osc.mod == DualMode_VCO)
+	if(osc.am_mod == ON)
 	{
 		for(i = start; i < end; i++)
 		{
@@ -365,7 +376,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	}
 
 	// AM Modulate VCO with ADSR
-	if(adsr_settings.mod == VCOamp || adsr_settings.mod == DualMode_VCO)
+	if(adsr_settings.am_mod == ON)
 	{
 		for(i = start; i < end; i++)
 		{
@@ -440,7 +451,7 @@ void adsr(uint16_t start, uint16_t end)
 		mov_avg_index4 = 0;
 	}
 
-	adsr_settings.sustain_amp = adsr_settings.sustain_amp/8000.0;
+	adsr_settings.sustain_amp = adsr_settings.sustain_amp/8000.0f;
 	// adsr_settings.sustain_amp = pseudo_log(adsr_settings.sustain_amp, ???);
 
 	// Calculate ADSR boundaries.
@@ -457,7 +468,7 @@ void adsr(uint16_t start, uint16_t end)
 
 	// Generic ADSR envelope
 	// The waveform contains 5 segments (asdr + a blank space)
-	if(adsr_settings.mod == VCOamp || adsr_settings.mod == VCOfreq || adsr_settings.mod == DualMode_VCO)
+	if(adsr_settings.am_mod == ON || adsr_settings.fm_mod == ON)
 	{
 		for(i = start; i < end; i++)
 		{
@@ -468,13 +479,13 @@ void adsr(uint16_t start, uint16_t end)
 				// Sine, FM --> Try 1.0
 				// Square, FM --> Use 0.4
 				// Triangle, FM ---> Try 2.0
-				buffer_adsr_am[i] = 1.0 + 1.0 * gen_sawtooth_angle( (sample_count_adsr+(i-start)) % samples_cycle_adsr * angle_attack);
+				buffer_adsr_am[i] = 1.0f + 1.0f * gen_sawtooth_angle( (sample_count_adsr+(i-start)) % samples_cycle_adsr * angle_attack);
 			}
 
 			else if( (sample_count_adsr+(i-start))%samples_cycle_adsr < sustain_start)
 			{
 				// Decay
-				buffer_adsr_am[i] = 1.0 * gen_rampdown_angle2( (sample_count_adsr+(i-start-decay_start)) % samples_cycle_adsr * angle_decay, adsr_settings.sustain_amp, 1.0);
+				buffer_adsr_am[i] = 1.0f * gen_rampdown_angle2( (sample_count_adsr+(i-start-decay_start)) % samples_cycle_adsr * angle_decay, adsr_settings.sustain_amp, 1.0);
 			}
 
 			else if( (sample_count_adsr+(i-start))%samples_cycle_adsr < release_start)
@@ -502,7 +513,7 @@ void adsr(uint16_t start, uint16_t end)
 	 * ADSR frequency envelope.
 	 * Uses the ADSR amplitude envelope and integrates each of the shapes.
 	 */
-	if(adsr_settings.mod == VCOfreq || adsr_settings.mod == DualMode_VCO)
+	if(adsr_settings.fm_mod == ON)
 	{
 		for(i = start; i < end; i++)
 		{
@@ -553,7 +564,7 @@ void adsr(uint16_t start, uint16_t end)
 					{
 						delta = buffer_adsr_fm[i-1] - buffer_adsr_fm[LENGTH_BUFFER-1];
 					}
-					buffer_adsr_fm[i] = 0.0;
+					buffer_adsr_fm[i] = 0.0f;
 				}
 				else
 				{
@@ -584,7 +595,7 @@ void adsr(uint16_t start, uint16_t end)
 			else if( (sample_count_adsr+(i-start))%samples_cycle_adsr < blank_end)
 			{
 				// Blank
-				buffer_adsr_fm[i] = 0;
+				buffer_adsr_fm[i] = 0.0f;
 			}
 		}
 	}
@@ -635,7 +646,7 @@ void adsr_rad(uint16_t start, uint16_t end)
 
 	// Generic ADSR envelope
 	// The waveform contains 5 segments (asdr + a blank space)
-	if(adsr_settings.mod == VCOamp || adsr_settings.mod == VCOfreq || adsr_settings.mod == DualMode_VCO)
+	if(adsr_settings.am_mod == ON || adsr_settings.fm_mod == ON)
 	{
 		for(i = start; i < end; i++)
 		{
@@ -693,7 +704,7 @@ void adsr_rad(uint16_t start, uint16_t end)
 	 * Uses the ADSR amplitude envelope and integrates each of the shapes.
 	 */
 	// if(adsr_fm)
-	if(adsr_settings.mod == VCOfreq || adsr_settings.mod == DualMode_VCO)
+	if(adsr_settings.fm_mod == ON)
 	{
 		for(i = start; i < end; i++)
 		{
@@ -819,8 +830,8 @@ float32_t gen_square_angle(float32_t angle)
 
 float32_t gen_sawtooth_angle(float32_t angle)
 {
-	float32_t m = 0.0;
-	float32_t val = 0.0;
+	float32_t m = 0.0f;
+	float32_t val = 0.0f;
 
 	angle = fast_fmod(angle, TWO_PI);
 
@@ -833,15 +844,15 @@ float32_t gen_sawtooth_angle(float32_t angle)
 
 float32_t gen_sawtooth_integral_angle(float32_t angle)
 {
-	float32_t val = 0.0;
-	float32_t m = 0.0;
+	float32_t val = 0.0f;
+	float32_t m = 0.0f;
 
 	angle = fast_fmod(angle, TWO_PI);
 	m = ONE_DIV_2_PI;
 	val = m*angle;			// Generate linear value between 0 and 1
 	val = val*val;			// Square it.  Produces parabola y: 0 to 1
-	val = val*2;			// Double it.
-	val = val - 1;			// Shift it down
+	val = val*2.0f;			// Double it.
+	val = val - 1.0f;			// Shift it down
 	return val;
 }
 
@@ -852,22 +863,22 @@ float32_t gen_sawtooth_integral_angle(float32_t angle)
  */
 float32_t gen_rampdown_angle(float32_t angle)
 {
-	float32_t m = 0.0;
-	float32_t val = 0.0;
+	float32_t m = 0.0f;
+	float32_t val = 0.0f;
 
 	angle = fast_fmod(angle, TWO_PI);
 
 	// y = mx + b
 	m = -ONE_DIV_PI;
-	val = 1.0 + angle*m;
+	val = 1.0f + angle*m;
 	return val;
 }
 
 
 float32_t gen_rampdown_angle2( float32_t angle, float32_t min, float32_t max)
 {
-	float32_t m = 0.0;
-	float32_t val = 0.0;
+	float32_t m = 0.0f;
+	float32_t val = 0.0f;
 
 	angle = fast_fmod(angle, TWO_PI);
 
@@ -882,8 +893,8 @@ float32_t gen_rampdown_angle2( float32_t angle, float32_t min, float32_t max)
 
 float32_t gen_triangle_angle(float32_t angle)
 {
-	float32_t val = 0.0;
-	float32_t m = 0.0;
+	float32_t val = 0.0f;
+	float32_t m = 0.0f;
 
 	// Increase from a negative value to its opposite value. Eg. -1 to 1 over 1/2 the wave's period
 	// Then decrease from 1 to -1 over 1/2 the wave's period
@@ -897,15 +908,15 @@ float32_t gen_triangle_angle(float32_t angle)
 	}
 	// Make sure difference can be negative.
 	// return amp + (m * (int32_t)(samples_half_cycle - current_sample));
-	val =  3 - m*angle;
+	val =  3.0f - m*angle;
 	return val;
 }
 
 // Integral of triangle wave is convex parabola going up and then concave parabola going down.
 float32_t gen_triangle_integral_angle(float32_t angle)
 {
-	float32_t val = 0.0;
-	float32_t m = 0.0;
+	float32_t val = 0.0f;
+	float32_t m = 0.0f;
 
 	angle = fast_fmod(angle, 2*PI);		// TODO: pull this out into generate_waveforms().
 	m = ONE_DIV_PI;
@@ -916,16 +927,16 @@ float32_t gen_triangle_integral_angle(float32_t angle)
 		val = m*angle;			// Generate linear value between 0 and 1
 		val = val*val;			// Square it.  Produces parabola y: 0 to 1
 		val = val*2;			// Double it.
-		val = val - 1;			// Shift it down
+		val = val - 1.0f;			// Shift it down
 		return val;
 	}
 
 	angle = angle - PI;
 	val = m*angle;			// Generate linear value between 0 and 1
 	val = val*val;			// Square it.  Produces parabola y: 0 to 1
-	val = 1 - val;			// Turn it upside down
-	val = val*2;			// Double it
-	val = val - 1;			// Shift it down
+	val = 1.0f - val;			// Turn it upside down
+	val = val*2.0f;			// Double it
+	val = val - 1.0f;			// Shift it down
 	return val;
 }
 
@@ -960,15 +971,15 @@ uint32_t moving_avg(uint32_t *ptrArrNumbers, uint32_t *ptrSum, uint32_t pos, uin
 // TODO: use int as input instead ... otherwise difficult to compare taper cutoff.
 uint16_t pseudo_log(uint16_t x)
 {
-	float32_t y1 = 0.0;
-	float32_t y2 = 0.0;
+	float32_t y1 = 0.0f;
+	float32_t y2 = 0.0f;
 	const uint16_t max = 4095;
 	const uint16_t xe = 3500;
-	const float32_t m1 = 0.1;
+	const float32_t m1 = 0.1f;
 	uint16_t ye = m1*xe;
 	uint16_t m2 = (float32_t) (max - ye)/(max - xe);
 
-	float32_t b = 0.0;
+	float32_t b = 0.0f;
 
 	y1 = (uint16_t) ((float32_t) m1 * x);
 

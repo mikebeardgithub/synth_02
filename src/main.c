@@ -28,7 +28,7 @@ SOFTWARE.
 */
 
 /* Includes */
-#include "initial_ization.h"
+#include <init_io.h>
 #include "user_interface.h"
 #include "osc.h"
 
@@ -62,16 +62,16 @@ int main(void)
 
 	/**************************** Run Initialization functions timer for tim2 started in init_adc*****************************/
 
-	menubutton.button=back;					//initializes menubutton state for startup
+	// menubutton.button=back;					//initializes menubutton state for startup
 	init_gpios();								//initialize gpios
 	init_push_buttons();						//initialize menu navigation buttons
 	init_adc(ADCBuffer);						//initialize ADC, do this last because it starts the timer
 	//init_spi();								//initialize the SPI for LCD not using SPI any more don't need this
-	init_parallel();							//initializes all the GPIO's for parallel LCD communication
+	// init_parallel();							//initializes all the GPIO's for parallel LCD communication
 	// lcd_init();								//initializes LCD screen
-	update_selector_state();					// get startup state
+	// update_selector_state();					// get startup state
 	init_state();								//initialize the global state variable for the menu, filterstate, secondary VCO and modlulation
-	display_new_menu();
+	// display_new_menu();
 
 	EVAL_AUDIO_Init( OUTPUT_DEVICE_AUTO, VOL, SAMPLERATE);
 	EVAL_AUDIO_Play(buffer_output, LENGTH_BUFFER);

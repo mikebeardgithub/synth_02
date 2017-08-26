@@ -34,16 +34,16 @@
 #define LENGTH_BUFFER           64
 #define BUFF_LEN_HALF           32
 
-#define OFF                     0
-#define ON                      1
+//#define OFF                     0
+//#define ON                      1
 
 /* Defines for wave shapes */
-#define WAVE_NONE				0
-#define WAVE_SINE				1
-#define WAVE_SQUARE				2
-#define WAVE_SAWTOOTH			3
-#define WAVE_TRIANGLE			4
-#define WAVE_NOISE				5
+//#define WAVE_NONE				0
+//#define WAVE_SINE				1
+//#define WAVE_SQUARE				2
+//#define WAVE_SAWTOOTH			3
+//#define WAVE_TRIANGLE			4
+//#define WAVE_NOISE				5
 
 /* Defines for modulation types */
 //#define MOD_NONE				0
@@ -62,13 +62,16 @@ typedef struct osc_setting
 	float32_t vco2_freq;
 	float32_t lfo_freq;
 
-	selector_state vco_wav;
-	selector_state lfo_wav;
+	uint16_t vco_wav;
+	uint16_t lfo_wav;
 
-	modulation_state mod;
+	// selector_state vco_wav;
+	// selector_state lfo_wav;
 
-//	uint16_t am_mod;
-//	uint16_t fm_mod;
+	// modulation_state mod;
+
+	uint16_t am_mod;
+	uint16_t fm_mod;
 
 	float32_t vco_amp;
 	float32_t vco_amp2;
@@ -94,7 +97,9 @@ typedef struct osc_setting
 
 typedef struct adsr_setting
 {
-	modulation_state mod;
+
+	uint16_t am_mod;
+	uint16_t fm_mod;
 
 	float32_t sustain_amp;
 

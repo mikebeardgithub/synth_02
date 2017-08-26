@@ -6,6 +6,7 @@
  */
 
 
+#include <init_io.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "stm32f4xx_gpio.h"
@@ -13,7 +14,6 @@
 #include "stm32f4xx_syscfg.h"
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_adc.h"
-#include "initial_ization.h"
 #include "main.h"
 
 /*********************************************************Globlal Variables***************************************

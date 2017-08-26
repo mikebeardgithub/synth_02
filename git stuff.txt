@@ -1,0 +1,15 @@
+After setting up the project, right click and choose "Git Create repository here"
+Click ok or whatever.
+Then open a bash shell
+
+	git status
+	git add .
+	git commit -m"bla bla"
+
+
+Go to Githum and create a new project.  I called it synth_02
+Follow the instructions on the github page...
+
+	git remote add origin https://github.com/mikebeardgithub/synth_02.git
+	git push -u origin master
+

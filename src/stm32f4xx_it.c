@@ -28,9 +28,9 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#include <init_io.h>
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_gpio.h"
-#include "initial_ization.h"
 #include "user_interface.h"
 
 /** @addtogroup Template_Project
@@ -148,14 +148,14 @@ void SysTick_Handler(void)
 
 
 /*
- * interrupt handler for up button
+ * interrupt handler for vco waveform button
  */
 void EXTI0_IRQHandler(void){
 	EXTI_ClearITPendingBit(EXTI_Line0);
 
-	if(menubutton.button_state == NOT_ACTIVE){
-		menubutton.button = up;
-		menubutton.button_state = ACTIVE;
+	if(the_button.button_state == NOT_ACTIVE){
+		the_button.button = vco_wave_button;
+		the_button.button_state = ACTIVE;
 		TIM_Cmd(TIM3, ENABLE);
 	}
 }
@@ -163,28 +163,28 @@ void EXTI0_IRQHandler(void){
 
 
 /*
- * interrupt handler for down button
+ * interrupt handler for lfo waveform button
  */
 void EXTI1_IRQHandler(void){
 	EXTI_ClearITPendingBit(EXTI_Line1);
 
-	if(menubutton.button_state == NOT_ACTIVE){
-		menubutton.button = down;
-		menubutton.button_state = ACTIVE;
+	if(the_button.button_state == NOT_ACTIVE){
+		the_button.button = lfo_wave_button;
+		the_button.button_state = ACTIVE;
 		TIM_Cmd(TIM3, ENABLE);
 	}
 }
 
 
 /*
- * interrupt handler for back button
+ * interrupt handler for lfo modulation type button
  */
 void EXTI2_IRQHandler(void){
 	EXTI_ClearITPendingBit(EXTI_Line2);
 
-	if(menubutton.button_state == NOT_ACTIVE){
-		menubutton.button = back;
-		menubutton.button_state = ACTIVE;
+	if(the_button.button_state == NOT_ACTIVE){
+		the_button.button = lfo_mod_button;
+		the_button.button_state = ACTIVE;
 		TIM_Cmd(TIM3, ENABLE);
 	}
 
@@ -193,31 +193,28 @@ void EXTI2_IRQHandler(void){
 
 
 /*
- * interrupt handler for enter button
+ * interrupt handler for adsr modulation type button
  */
 void EXTI3_IRQHandler(void){
 	EXTI_ClearITPendingBit(EXTI_Line3);
 
-	if(menubutton.button_state == NOT_ACTIVE){
-		menubutton.button = enter;
-		menubutton.button_state = ACTIVE;
+	if(the_button.button_state == NOT_ACTIVE){
+		the_button.button = adsr_mod_button;
+		the_button.button_state = ACTIVE;
 		TIM_Cmd(TIM3, ENABLE);
 	}
 }
 
 //EXTI9_5_IRQn used for selector
-
 void EXTI9_5_IRQHandler(void){
-
-	EXTI_ClearITPendingBit(EXTI_Line6 | EXTI_Line6 | EXTI_Line7 | EXTI_Line8 | EXTI_Line9);
-
+	// TODO: Is this a mistake?  Looks like EXTI_Line6 is twice.  Maybe should be EXTI_Line5.
+	// EXTI_ClearITPendingBit(EXTI_Line6 | EXTI_Line6 | EXTI_Line7 | EXTI_Line8 | EXTI_Line9);
+	EXTI_ClearITPendingBit(EXTI_Line5 | EXTI_Line6 | EXTI_Line7 | EXTI_Line8 | EXTI_Line9);
 	if(!((TIM4->CR1 & TIM_CR1_CEN) == TIM_CR1_CEN)){			//is debounce timer off
 			TIM_Cmd(TIM4, ENABLE);								//turn on debounce timer
 	}
+	// update_state();
 }
-
-
-
 
 //EXTI15_10_IRQn used for selector
 void EXTI15_10_IRQHandler(void){
@@ -228,34 +225,50 @@ void EXTI15_10_IRQHandler(void){
 	}
 }
 
-
-
 // Timer for limiting button pushes 100ms
-void TIM3_IRQHandler(){
+void TIM3_IRQHandler()
+{
+	// Note: the_button.button is set to vco_wave or whatever by
+	// EXTI0_IRQHandler() or whatever.
+	// That routine is called first and then this one.
+	// It enables the TIM3 timer.  Then this function disables it.
 
-	TIM_Cmd(TIM3, DISABLE);
-	int temp = menubutton.button;						//stop timer
+	TIM_Cmd(TIM3, DISABLE);				//stop timer
+	int temp = the_button.button;
+
 	TIM_ClearITPendingBit(TIM3, TIM_IT_Update);			//clear interrupt
-	menubutton.button_state = NOT_ACTIVE;
-	if(temp == enter){
-		handle_enter();
-	}else if(temp == back){
-		handle_back();
-	}else if(temp == up){
-		handle_up();
-	}else if(temp == down){
-		handle_down();
+	the_button.button_state = NOT_ACTIVE;
+	if(temp == vco_wave_button)
+	{
+		// handle_enter();			// TODO
+		update_vco_wave();
+
+	}
+	else if(temp == lfo_wave_button)
+	{
+		// handle_back();			// TODO
+		update_lfo_wave();
+	}
+	else if(temp == lfo_mod_button)
+	{
+		// handle_up();			// TODO
+		update_lfo_mod();
+	}
+	else if(temp == adsr_mod_button)
+	{
+		// handle_down();			// TODO
+		update_adsr_mod();
 	}
 }
 
-
-
 // Timer for debouncing selectors 50ms
-void TIM4_IRQHandler(){
+void TIM4_IRQHandler()
+{
 	TIM_Cmd(TIM4, DISABLE);								//stop timer
 	TIM_ClearITPendingBit(TIM4, TIM_IT_Update);			//clear interrupt
-	update_selector_state();							//update state
 
+	// update_selector_state();							//update state
+	// update_state();
 }
 
 // not set up yet but might to see if the adc is working
