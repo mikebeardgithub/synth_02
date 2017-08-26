@@ -13,3 +13,15 @@ Follow the instructions on the github page...
 	git remote add origin https://github.com/mikebeardgithub/synth_02.git
 	git push -u origin master
 
+---------------------------------------------------------------------------
+
+Merging Branch with Master
+----------------------------------
+change to branch using "checkout"
+update the branch with the latest code
+
+change to master branch using "checkout"
+git merge [branch name]	-m"Your message"
+git push -u origin master
+
+
