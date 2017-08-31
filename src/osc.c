@@ -124,12 +124,12 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	// osc.mod = DualMode_VCO;
 
 	// PC2
-	osc.volume = (float32_t) moving_avg(mov_avg6, &mov_avg_sum6, mov_avg_index6, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[10] & 0xfffc));
-	mov_avg_index6++;
-	if (mov_avg_index6 >= MOV_AVG_LENGTH_BUFFER)
-	{
-		mov_avg_index6 = 0;
-	}
+//	osc.volume = (float32_t) moving_avg(mov_avg6, &mov_avg_sum6, mov_avg_index6, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[10] & 0xfffc));
+//	mov_avg_index6++;
+//	if (mov_avg_index6 >= MOV_AVG_LENGTH_BUFFER)
+//	{
+//		mov_avg_index6 = 0;
+//	}
 
 	// A0
 	osc.vco_amp = moving_avg(mov_avg5, &mov_avg_sum5, mov_avg_index5, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[1] & 0xfffc));
@@ -139,8 +139,8 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		mov_avg_index5 = 0;
 	}
 
-	osc.volume = (float32_t) osc.volume / 2048;
-	osc.vco_amp = osc.vco_amp * osc.volume;
+//	osc.volume = (float32_t) osc.volume / 2048;
+//	osc.vco_amp = osc.vco_amp * osc.volume;
 
 	// A1
 	uint16_t tempf = pseudo_log(ADCBuffer[0] & 0xfffc);
@@ -152,6 +152,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		mov_avg_index1 = 0;
 	}
 
+	// A2
 	osc.lfo_amp = moving_avg(mov_avg3, &mov_avg_sum3, mov_avg_index3, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[2] & 0xfffc));
 	mov_avg_index3++;
 	if (mov_avg_index3 >= MOV_AVG_LENGTH_BUFFER)
@@ -161,6 +162,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	osc.lfo_amp_am = osc.lfo_amp*LFO_AMP_AM;
 	osc.lfo_amp_fm = osc.lfo_amp*LFO_AMP_FM;
 
+	// A3
 	tempf = pseudo_log(ADCBuffer[3] & 0xfffc);
 	// osc.lfo_freq = moving_avg(mov_avg2, &mov_avg_sum2, mov_avg_index2, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[3] & 0xfffc));
 	osc.lfo_freq = moving_avg(mov_avg2, &mov_avg_sum2, mov_avg_index2, MOV_AVG_LENGTH_BUFFER, tempf);
@@ -191,11 +193,19 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	volatile float32_t rads_per_sample_lfo = osc.lfo_freq / ONE_SECOND;		// Radians to increment for each iteration.
 
 	// Fill adsr buffer.
-	if(adsr_settings.am_mod == ON || adsr_settings.fm_mod == ON)
-	{
+//	if(adsr_settings.am_mod == ON || adsr_settings.fm_mod == ON)
+//	{
 		adsr(start, end);
-	}
+//	}
 
+	// No LFO
+	if(osc.lfo_wav == nowave)
+	{
+		for(i = start; i < end; i++)
+		{
+			buffer_lfo_float[i] = 0;
+		}
+	}
 
 	// Sine LFO
 	if(osc.lfo_wav == sine)
@@ -280,6 +290,16 @@ void generate_waveforms(uint16_t start, uint16_t end)
 
 	}
 
+
+	// No VCO
+	if(osc.vco_wav == nowave)
+	{
+		for(i = start; i < end; i++)
+		{
+			buffer_output[i] = 0;
+		}
+	}
+
 	// Sine VCO
 	if(osc.vco_wav == sine)
 	{
@@ -290,7 +310,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 			// theta_vco2 = theta_vco2 + rads_per_sample_vco2;
 			if(osc.fm_mod == ON)
 			{
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco + osc.lfo_amp_fm * buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
 				// buffer_output[i] = 0.3*osc.vco_amp + 0.3*osc.vco_amp*arm_sin_f32(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
 				// buffer_output2[i] = 0.1*osc.vco_amp2 + 0.1*osc.vco_amp*arm_sin_f32(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
 				// buffer_output[i] = buffer_output[i] + buffer_output2[i];
@@ -465,6 +485,15 @@ void adsr(uint16_t start, uint16_t end)
 	volatile float32_t angle_attack = PI/adsr_settings.attack_len;
 	volatile float32_t angle_decay = PI/adsr_settings.decay_len;
 	volatile float32_t angle_release = PI/adsr_settings.release_len;
+
+	if(adsr_settings.am_mod == OFF && adsr_settings.fm_mod == OFF)
+	{
+		for(i = start; i < end; i++)
+		{
+			buffer_adsr_am[i] = 0;
+			buffer_adsr_fm[i] = 0;
+		}
+	}
 
 	// Generic ADSR envelope
 	// The waveform contains 5 segments (asdr + a blank space)

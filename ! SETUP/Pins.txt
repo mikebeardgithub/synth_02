@@ -4,42 +4,66 @@ DONE -remove LCD stuff
 DONE -change all 1.0 to 1.0f --- to make sure it's 32-bit floats and not 64-bit floats.
 DONE -Rename structs/variables so they make more sense
 DONE -Put osc.h structs into main.h --> so that user_interface and init_io can write to them and osc can read from them.
+DONE -Use buttons to cycle through waveforms - instead of selector.
+	initial_io.c		init_push_buttons()
+	user_interface.c	update_selector_state()
+DONE -turned off pin C2 (volume)
 
+Bug Fixes
+DONE -when no VCO waveform is chosen, make it output no sound (instead of that high pitches beep).
+DONE -When no LFO waveform is chosen, make sure the VCO still outputs, but with no modulation.
+-When LFO modulation type changes from am->fm->etc, make sure output volume doesn't change
+DONE -ADSR - when no modulation is chosen, make sure VCO outputs cleanly
+-ADSR - make sure it does correct modulation types: am, fm, am+fm, off.
+-ADSR - AM modulation sounds noisy - clipping?
+
+	
 -Change pins - buttons
 	user_interface.c			update_state()
 -Change pins - pots
 
--remove volume knob
+-see if 2nd oscillator will work, now that I'm using proper 32-bit floats.
 
+-make it work with any buffer size.  (Not sure if that works anymore).
+-Determine a good buffer length -- less than 0.1 second long, I think.
 
+-make it mono 
 
--see if 2nd oscillator will work
-
--Use buttons to cycle through waveforms - instead of selector.
-	initial_io.c		init_push_buttons()
-	user_interface.c	update_selector_state()
 	
-
+	
 	
 ====================================
 PINS - NEW
 ====================================
 
+	Buttons
+	------------------------
+	E0		vco waveform type
+	E1		lfo waveform type
+	E2		lfo modulation type
+	E3		adsr modulation type
+	**E4**	Filter on	 - TEST TEST
+
 	Oscillators - Pots
 	------------------------
-	A0		VCO-Amplitude			ADCBuffer[1]		** NOTE: same pin as pushbutton **
-	A1		VCO-Frequency			ADCBuffer[0]	
+	A1		VCO-Amplitude			ADCBuffer[1]		** NOTE: same pin as pushbutton **
+	A0		VCO-Frequency			ADCBuffer[0]	
 	
 	A2		LFO-Amplitude			ADCBuffer[2]
 	A3		LFO-Frequency			ADCBuffer[3]	
 
-
-	Buttons
+	Envelope - Pots
 	------------------------
-	E7		vco waveform type
-	E8		lfo waveform type
-	E9		lfo modulation type
-	E10		adsr modulation type
+	A5		ENVELOPE-Attack			ADCBuffer[4]
+	C1		ENVELOPE-decay			ADCBuffer[9]
+	A7		ENVELOPE-Sustain		ADCBuffer[5]
+	B0		ENVELOPE-Release		ADCBuffer[6]
+	C0		ENVELOPE-BlankLen		ADCBuffer[8]
+	C4		ENVELOPE-sustain amp	ADCBuffer[11]
+	
+	Filter - Pots
+	------------------------
+	
 
 ====================================
 PINS - OLD

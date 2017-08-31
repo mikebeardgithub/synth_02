@@ -39,9 +39,6 @@ void init_adc(volatile uint16_t ADCBuffer[NUM_CHANNELS]){
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef time_base_struct;
 
-
-
-
 	/* Enable timer (timer runs at 13.3 Hz)*/
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 	TIM_TimeBaseStructInit(&time_base_struct);
@@ -88,10 +85,11 @@ void init_adc(volatile uint16_t ADCBuffer[NUM_CHANNELS]){
 	//C bank pins//GPIO_Pin_0
 	//GPIO_Pin_0	ENVELOPE blsnk_len
 	//GPIO_Pin_1	ENVELOPE-decay
-	//GPIO_Pin_2	VCO-Volume
+	//GPIO_Pin_2	VCO-Volume					TODO: get rid of volume.
 	//GPIO_Pin_4	ENVELOPE-sustain-amp
 	GPIO_StructInit(&GPIO_InitStructure);
-	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_4;
+	// GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_4;
+	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4;		// MB turned off C2
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AIN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
@@ -195,7 +193,7 @@ void init_gpios(){
 
 
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE); 			//This is already turned on in ADC Init function
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE,ENABLE);
+	// MB RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE,ENABLE);
 
 	/*
 	 * E Bank pins
@@ -209,12 +207,14 @@ void init_gpios(){
 	 * PE14		lfo_square
 	 * PE15		lfo_triangle
 	 */
-	GPIO_StructInit(&GPIO_InitStructure);							// Default values
-	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 |GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
-	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN;					//input
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;				//slow
-	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;				//no
-	GPIO_Init(GPIOE, &GPIO_InitStructure);
+
+// MB - don't think I'll need these
+//	GPIO_StructInit(&GPIO_InitStructure);							// Default values
+//	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 |GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
+//	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN;					//input
+//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;				//slow
+//	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;				//no
+//	GPIO_Init(GPIOE, &GPIO_InitStructure);
 
 
 	/*
@@ -250,19 +250,22 @@ void init_gpios(){
 	/*Configure pins as EXTI*/
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG,ENABLE);
 	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource6);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource7);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource8);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource9);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource10);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource11);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource12);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource13);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource14);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource15);
+
+// MB - don't think I'll need these
+//	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource7);
+//	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource8);
+//	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource9);
+//	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource10);
+//	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource11);
+//	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource12);
+//	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource13);
+//	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource14);
+//	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource15);
 
 
 	//init EXTI
-	EXTI_init_struct.EXTI_Line = EXTI_Line6 | EXTI_Line7 | EXTI_Line8 | EXTI_Line9 | EXTI_Line10 | EXTI_Line11 | EXTI_Line12 | EXTI_Line13 | EXTI_Line14 | EXTI_Line15;
+	// MB EXTI_init_struct.EXTI_Line = EXTI_Line6 | EXTI_Line7 | EXTI_Line8 | EXTI_Line9 | EXTI_Line10 | EXTI_Line11 | EXTI_Line12 | EXTI_Line13 | EXTI_Line14 | EXTI_Line15;
+	EXTI_init_struct.EXTI_Line = EXTI_Line6;
 	EXTI_init_struct.EXTI_LineCmd = ENABLE;
 	EXTI_init_struct.EXTI_Mode =  EXTI_Mode_Interrupt;
 	EXTI_init_struct.EXTI_Trigger = EXTI_Trigger_Rising;
@@ -274,16 +277,12 @@ void init_gpios(){
 	EXTI_NVIC_init_struct.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&EXTI_NVIC_init_struct);
 
-
-	EXTI_NVIC_init_struct.NVIC_IRQChannel = EXTI15_10_IRQn;;
-	EXTI_NVIC_init_struct.NVIC_IRQChannelPreemptionPriority = 0x0F;
-	EXTI_NVIC_init_struct.NVIC_IRQChannelSubPriority = 0x0F;
-	EXTI_NVIC_init_struct.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&EXTI_NVIC_init_struct);
-
-
-
-
+	// MB - check to see this doesn't break anything.
+//	EXTI_NVIC_init_struct.NVIC_IRQChannel = EXTI15_10_IRQn;
+//	EXTI_NVIC_init_struct.NVIC_IRQChannelPreemptionPriority = 0x0F;
+//	EXTI_NVIC_init_struct.NVIC_IRQChannelSubPriority = 0x0F;
+//	EXTI_NVIC_init_struct.NVIC_IRQChannelCmd = ENABLE;
+//	NVIC_Init(&EXTI_NVIC_init_struct);
 }
 
 
@@ -309,7 +308,8 @@ void  init_push_buttons(){
 	 * PE3		Menu enter
 	 */
 	GPIO_StructInit(&GPIO_InitStructure);							//default values
-	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
+	// GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4;		// MB - to turn filter on
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN;					//input
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_25MHz;				//medium
 	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;				//pull down
@@ -374,17 +374,11 @@ void  init_push_buttons(){
 	EXTI_NVIC_init_struct.NVIC_IRQChannelSubPriority = 0x0F;
 	EXTI_NVIC_init_struct.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&EXTI_NVIC_init_struct);
-
-
 }
-
-
-
 
 /*
  * Initializes the SPI for the LCD Screen PC3 MOSI, PB10 SCK, PC5 chip select active low
  */
-
 void init_spi(){
 
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -429,12 +423,12 @@ void init_spi(){
 	 * B bank pins
 	 * PB9 		Chip select
 	 */
-//	GPIO_StructInit(&GPIO_InitStructure);							//default values
-//	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_15;
-//	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;					//input
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;				//medium
-//	GPIO_InitStructure.GPIO_PuPd  =   GPIO_PuPd_DOWN;				//pull down
-//	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_StructInit(&GPIO_InitStructure);							//default values
+	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;					//input
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;				//medium
+	GPIO_InitStructure.GPIO_PuPd  =   GPIO_PuPd_DOWN;				//pull down
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_SPI2);
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource3, GPIO_AF_SPI2);
@@ -459,7 +453,7 @@ void init_spi(){
 }
 
 
-
+// MB: I think this for for LCD pins.
 void init_parallel(){
 
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC,ENABLE); 			//This is already turned on in init gpio's but turn on incase
