@@ -21,7 +21,7 @@ volatile float32_t buffer_adsr_fm[LENGTH_BUFFER] = {0};
 osc_setting osc =
 {
 	.vco_freq = 1400.0,
-	.vco2_freq = 413.7,
+	.vco2_freq = 1400.0,
 	.lfo_freq = 1.73,
 
 	.vco_wav = sine,
@@ -97,7 +97,7 @@ volatile float32_t delta = 0.0;
  */
 
 volatile float32_t theta_vco = 0.0f;
-// volatile float32_t theta_vco2 = 0.0f;
+volatile float32_t theta_vco2 = 0.0f;
 volatile float32_t theta_lfo = 0.0f;
 volatile float32_t theta_adsr = 1.0f;
 
@@ -189,7 +189,8 @@ void generate_waveforms(uint16_t start, uint16_t end)
 
 	//	// Calculate angle amount to increment per sample.
 	volatile float32_t rads_per_sample_vco = osc.vco_freq / ONE_SECOND;		// Radians to increment for each iteration.
-	// volatile float32_t rads_per_sample_vco2 = rads_per_sample_vco/2;		// Radians to increment for each iteration.
+	volatile float32_t rads_per_sample_vco2 = osc.vco_freq / TWO_SECOND;
+	//volatile float32_t rads_per_sample_vco2 = rads_per_sample_vco/2.0f;		// Radians to increment for each iteration.
 	volatile float32_t rads_per_sample_lfo = osc.lfo_freq / ONE_SECOND;		// Radians to increment for each iteration.
 
 	// Fill adsr buffer.
@@ -290,7 +291,6 @@ void generate_waveforms(uint16_t start, uint16_t end)
 
 	}
 
-
 	// No VCO
 	if(osc.vco_wav == nowave)
 	{
@@ -303,27 +303,21 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	// Sine VCO
 	if(osc.vco_wav == sine)
 	{
-
 		for(i = start; i < end; i++)
 		{
 			theta_vco = theta_vco + rads_per_sample_vco;
-			// theta_vco2 = theta_vco2 + rads_per_sample_vco2;
+			theta_vco2 = theta_vco2 + rads_per_sample_vco2;
 			if(osc.fm_mod == ON)
 			{
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco + osc.lfo_amp_fm * buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
-				// buffer_output[i] = 0.3*osc.vco_amp + 0.3*osc.vco_amp*arm_sin_f32(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
-				// buffer_output2[i] = 0.1*osc.vco_amp2 + 0.1*osc.vco_amp*arm_sin_f32(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
-				// buffer_output[i] = buffer_output[i] + buffer_output2[i];
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco + osc.lfo_amp_fm * buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco2 + osc.lfo_amp_fm * buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 			else
 			{
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco + 0.3 * buffer_adsr_fm[i]);
-
-				// TEST
-				// buffer_output[i] = 0.3*osc.vco_amp + 0.3*osc.vco_amp*arm_sin_f32(theta_vco + 0.3 * buffer_adsr_fm[i]);
-				// buffer_output2[i] = 0.1*osc.vco_amp + 0.1*osc.vco_amp*arm_sin_f32(theta_vco2);
-				// buffer_output[i] = buffer_output[i] + buffer_output2[i];
-
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
+				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 		}
 	}
@@ -331,18 +325,21 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	// Square VCO
 	else if(osc.vco_wav == square)
 	{
-
 		for(i = start; i < end; i++)
 		{
 			theta_vco = theta_vco + rads_per_sample_vco;
-
+			theta_vco2 = theta_vco2 + rads_per_sample_vco2;
 			if(osc.fm_mod == ON)
 			{
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 			else
 			{
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco + 0.3 * buffer_adsr_fm[i]);
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
+				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 		}
 	}
@@ -350,19 +347,22 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	// Sawtooth VCO
 	else if(osc.vco_wav == sawtooth)
 	{
-
 		for(i = start; i < end; i++)
 		{
 			theta_vco = theta_vco + rads_per_sample_vco;
-
+			theta_vco2 = theta_vco2 + rads_per_sample_vco2;
 			if(osc.fm_mod == ON)
 			{
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output[i] = buffer_output[i] + buffer_output2[i];
+
 			}
 			else
 			{
-				// buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco + 10*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco + 0.3 * buffer_adsr_fm[i]);
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
+				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 		}
 	}
@@ -370,19 +370,22 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	// Triangle VCO
 	else if(osc.vco_wav == triangle)
 	{
-
 		for(i = start; i < end; i++)
 		{
 			theta_vco = theta_vco + rads_per_sample_vco;
+			theta_vco2 = theta_vco2 + rads_per_sample_vco2;
 			if(osc.fm_mod == ON)
 			{
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3 * buffer_adsr_fm[i]);
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 			else
 			{
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + 0.3 * buffer_adsr_fm[i]);
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
+				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
-
 		}
 	}
 

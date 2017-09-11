@@ -28,7 +28,7 @@ DONE -ADSR - when no modulation is chosen, make sure VCO outputs cleanly
 -Determine a good buffer length -- less than 0.1 second long, I think.
 
 -make it mono 
-
+-make adsr use floats
 	
 	
 	
