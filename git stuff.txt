@@ -7,7 +7,7 @@ Then open a bash shell
 	git commit -m"bla bla"
 
 
-Go to Githum and create a new project.  I called it synth_02
+Go to Github and create a new project.  I called it synth_02
 Follow the instructions on the github page...
 
 	git remote add origin https://github.com/mikebeardgithub/synth_02.git
@@ -25,3 +25,11 @@ git merge [branch name]	-m"Your message"
 git push -u origin master
 
 
+---------------------------------------------------------------------------
+Using GIT GUI
+
+Checkout the 'working' branch (or whatever you called it)
+Stage the changes: click on each file listed under "Unstaged Changes"
+Enter a commit message.
+Click "Commit"
+Click "Push"

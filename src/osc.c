@@ -315,6 +315,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 			}
 			else
 			{
+				// TEST
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco + 0.3f * buffer_adsr_fm[i]);
 				buffer_output2[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
 				buffer_output[i] = buffer_output[i] + buffer_output2[i];
@@ -408,7 +409,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	}
 
 	theta_vco = fast_fmod(theta_vco, TWO_PI);
-	// theta_vco2 = fast_fmod(theta_vco2, TWO_PI);
+	theta_vco2 = fast_fmod(theta_vco2, TWO_PI);
 	theta_lfo = fast_fmod(theta_lfo, TWO_PI);
 	theta_adsr = fast_fmod(theta_adsr, TWO_PI);
 
