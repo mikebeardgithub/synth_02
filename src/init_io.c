@@ -30,8 +30,8 @@
  * Uses DMA to transfer data and a timer to throttle the ADC conversion
  * The conversion cycle occurs every 75ms this function starts the timer.
  */
-void init_adc(volatile uint16_t ADCBuffer[NUM_CHANNELS]){
-
+void init_adc(volatile uint16_t ADCBuffer[NUM_CHANNELS])
+{
 	/* Define ADC init structures */
 	ADC_InitTypeDef       adc_init_struct;
 	ADC_CommonInitTypeDef adc_com_init_struct;
@@ -85,11 +85,11 @@ void init_adc(volatile uint16_t ADCBuffer[NUM_CHANNELS]){
 	//C bank pins//GPIO_Pin_0
 	//GPIO_Pin_0	ENVELOPE blsnk_len
 	//GPIO_Pin_1	ENVELOPE-decay
-	//GPIO_Pin_2	VCO-Volume					TODO: get rid of volume.
+	//GPIO_Pin_2	VC02 Amplitude
 	//GPIO_Pin_4	ENVELOPE-sustain-amp
 	GPIO_StructInit(&GPIO_InitStructure);
-	// GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_4;
-	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4;		// MB turned off C2
+	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_4;
+	// GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4;		// MB turned off C2
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AIN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
@@ -141,7 +141,7 @@ void init_adc(volatile uint16_t ADCBuffer[NUM_CHANNELS]){
 	adc_init_struct.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_Rising;
 	adc_init_struct.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T2_TRGO;
 	adc_init_struct.ADC_DataAlign = ADC_DataAlign_Right;
-	adc_init_struct.ADC_NbrOfConversion = NUM_CHANNELS; /* 5 channels in total */
+	adc_init_struct.ADC_NbrOfConversion = NUM_CHANNELS;			// 5 channels in total MB: I think it's 12 now.
 	ADC_Init(ADC1, &adc_init_struct);
 
 	/* Configure channels */
@@ -155,7 +155,7 @@ void init_adc(volatile uint16_t ADCBuffer[NUM_CHANNELS]){
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_9, 8, ADC_SampleTime_480Cycles);		//FILTER-FreqLow
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 9, ADC_SampleTime_480Cycles);	//ENVELOPE blsnk_len
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_11, 10, ADC_SampleTime_480Cycles);	//ENVELOPE-decay
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_12, 11, ADC_SampleTime_480Cycles);	//VCO-Volume
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_12, 11, ADC_SampleTime_480Cycles);	//VCO-Volume -- MB: will now be VCO2 amplitude
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_14, 12, ADC_SampleTime_480Cycles);	//ENVELOPE-sustain-amp
 
 	/* Enable ADC1 DMA */
@@ -166,16 +166,7 @@ void init_adc(volatile uint16_t ADCBuffer[NUM_CHANNELS]){
 	ADC_Cmd(ADC1, ENABLE);
 
 	TIM_Cmd(TIM2, ENABLE);		//This could be dine in the main however gonna leave it here
-
-
-
 }
-
-
-
-
-
-
 
 
 /*

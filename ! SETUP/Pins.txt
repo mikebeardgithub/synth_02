@@ -1,7 +1,10 @@
 TODO:
 
--pot for VCO2 amplitude.  VCO2 frequency offset.
--make it work with any buffer size.  (Not sure if that works anymore).
+-Pot for VCO2 amplitude.  Pot for VCO2 frequency offset.
+	Can use the old C2 (was for volume).
+	Will need to set up another pot.
+	
+-Make it work with any buffer size.  (Not sure if that works anymore).
 -Determine a good buffer length -- less than 0.1 second long, I think.
 
 -make it mono 
@@ -47,6 +50,9 @@ PINS - NEW
 	------------------------
 	A1		VCO-Amplitude			ADCBuffer[1]		** NOTE: same pin as pushbutton **
 	A0		VCO-Frequency			ADCBuffer[0]	
+	
+	C2		VCO2-Amplitude			ADCBuffer[10]
+	??		VC02-Frequency Offset	ADCBuffer[??]
 	
 	A2		LFO-Amplitude			ADCBuffer[2]
 	A3		LFO-Frequency			ADCBuffer[3]	

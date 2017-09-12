@@ -1,5 +1,5 @@
 init_io.c:33:6:init_adc	136	static
-init_io.c:186:6:init_gpios	48	static
-init_io.c:293:7:init_push_buttons	48	static
-init_io.c:382:6:init_spi	40	static
-init_io.c:457:6:init_parallel	16	static
+init_io.c:177:6:init_gpios	48	static
+init_io.c:284:7:init_push_buttons	48	static
+init_io.c:373:6:init_spi	40	static
+init_io.c:448:6:init_parallel	16	static

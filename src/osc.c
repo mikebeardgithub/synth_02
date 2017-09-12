@@ -32,7 +32,7 @@ osc_setting osc =
 	.fm_mod = OFF,
 
 	.vco_amp = VCO_AMP,
-	.vco_amp2 = VCO_AMP,
+	.vco2_amp = VCO_AMP,
 
 	.lfo_amp = 1.0f,
 	.lfo_amp_am = 1.0f,
@@ -123,20 +123,20 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	// osc.mod = NO_MOD;
 	// osc.mod = DualMode_VCO;
 
-	// PC2
-//	osc.volume = (float32_t) moving_avg(mov_avg6, &mov_avg_sum6, mov_avg_index6, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[10] & 0xfffc));
-//	mov_avg_index6++;
-//	if (mov_avg_index6 >= MOV_AVG_LENGTH_BUFFER)
-//	{
-//		mov_avg_index6 = 0;
-//	}
-
 	// A0
 	osc.vco_amp = moving_avg(mov_avg5, &mov_avg_sum5, mov_avg_index5, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[1] & 0xfffc));
 	mov_avg_index5++;
 	if (mov_avg_index5 >= MOV_AVG_LENGTH_BUFFER)
 	{
 		mov_avg_index5 = 0;
+	}
+
+	// C2
+	osc.vco2_amp = moving_avg(mov_avg6, &mov_avg_sum6, mov_avg_index6, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[10] & 0xfffc));
+	mov_avg_index6++;
+	if (mov_avg_index6 >= MOV_AVG_LENGTH_BUFFER)
+	{
+		mov_avg_index6 = 0;
 	}
 
 //	osc.volume = (float32_t) osc.volume / 2048;
@@ -310,14 +310,13 @@ void generate_waveforms(uint16_t start, uint16_t end)
 			if(osc.fm_mod == ON)
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco + osc.lfo_amp_fm * buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
-				buffer_output2[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco2 + osc.lfo_amp_fm * buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*arm_sin_f32(theta_vco2 + osc.lfo_amp_fm * buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
 				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 			else
 			{
-				// TEST
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco + 0.3f * buffer_adsr_fm[i]);
-				buffer_output2[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*arm_sin_f32(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
 				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 		}
@@ -333,13 +332,13 @@ void generate_waveforms(uint16_t start, uint16_t end)
 			if(osc.fm_mod == ON)
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
-				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*gen_square_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
 				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 			else
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco + 0.3f * buffer_adsr_fm[i]);
-				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*gen_square_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
 				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 		}
@@ -355,14 +354,14 @@ void generate_waveforms(uint16_t start, uint16_t end)
 			if(osc.fm_mod == ON)
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
-				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*gen_sawtooth_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
 				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 
 			}
 			else
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco + 0.3f * buffer_adsr_fm[i]);
-				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*gen_sawtooth_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
 				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 		}
@@ -378,13 +377,13 @@ void generate_waveforms(uint16_t start, uint16_t end)
 			if(osc.fm_mod == ON)
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
-				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*gen_triangle_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
 				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 			else
 			{
 				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + 0.3f * buffer_adsr_fm[i]);
-				buffer_output2[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
+				buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*gen_triangle_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
 				buffer_output[i] = buffer_output[i] + buffer_output2[i];
 			}
 		}
@@ -652,13 +651,13 @@ void adsr_rad(uint16_t start, uint16_t end)
 
 	// One cycle is the entire ADSR envelope plus blank space.
 	volatile uint32_t samples_cycle_adsr = adsr_settings.attack_len + adsr_settings.decay_len + adsr_settings.sustain_len + adsr_settings.release_len + adsr_settings.blank_len;
-	volatile float32_t rads_per_sample_adsr = 0.0;
+	volatile float32_t rads_per_sample_adsr = 0.0f;
 
 	// Avoid division by zero.
 	rads_per_sample_adsr = 2.0 * PI / (float32_t) samples_cycle_adsr;
 	if (isinf(rads_per_sample_adsr))
 	{
-		rads_per_sample_adsr = 1000;
+		rads_per_sample_adsr = 1000.0f;
 	}
 
 	adsr_settings.attack_len_rad = adsr_settings.attack_len * rads_per_sample_adsr;
@@ -694,7 +693,7 @@ void adsr_rad(uint16_t start, uint16_t end)
 				// Square, FM --> Use 0.4
 				// Triangle, FM ---> Try 2.0
 				// buffer_adsr_am[i] = 1.0 + 1.0 * gen_sawtooth_angle( (sample_count_adsr+(i-start)) % samples_cycle_adsr * angle_attack);
-				buffer_adsr_am[i] = 1.0 + 1.0 * gen_sawtooth_angle(theta_adsr * PI/ adsr_settings.attack_len_rad);
+				buffer_adsr_am[i] = 1.0f + 1.0f * gen_sawtooth_angle(theta_adsr * PI/ adsr_settings.attack_len_rad);
 			}
 
 			// else if( (sample_count_adsr+(i-start))%samples_cycle_adsr < sustain_start)
@@ -702,7 +701,7 @@ void adsr_rad(uint16_t start, uint16_t end)
 			{
 				// Decay
 				// buffer_adsr_am[i] = 1.0 * gen_rampdown_angle2( (sample_count_adsr+(i-start-decay_start)) % samples_cycle_adsr * angle_decay, adsr_settings.sustain_amp, 1.0);
-				buffer_adsr_am[i] = 1.0 * gen_rampdown_angle2(theta_adsr * 2 * PI/ adsr_settings.attack_len_rad, adsr_settings.sustain_amp, 1.0);
+				buffer_adsr_am[i] = 1.0f * gen_rampdown_angle2(theta_adsr * 2.0f * PI/ adsr_settings.attack_len_rad, adsr_settings.sustain_amp, 1.0f);
 			}
 
 			// else if( (sample_count_adsr+(i-start))%samples_cycle_adsr < release_start)
@@ -870,7 +869,7 @@ float32_t gen_sawtooth_angle(float32_t angle)
 
 	// y = mx + b
 	m = ONE_DIV_PI;
-	val = -1+angle*m;
+	val = -1.0f + angle * m;
 	return val;
 }
 
@@ -917,7 +916,7 @@ float32_t gen_rampdown_angle2( float32_t angle, float32_t min, float32_t max)
 
 	// y = mx + b
 	m = (min - max) * ONE_DIV_PI;
-	val = 1.0 + angle*m;
+	val = 1.0f + angle*m;
 
 
 	return val;
@@ -936,7 +935,7 @@ float32_t gen_triangle_angle(float32_t angle)
 	m = TWO_DIV_PI;
 	if (angle < PI)
 	{
-		val = -1 + m*angle;
+		val = -1.0f + m*angle;
 		return val;
 	}
 	// Make sure difference can be negative.
@@ -959,7 +958,7 @@ float32_t gen_triangle_integral_angle(float32_t angle)
 	{
 		val = m*angle;			// Generate linear value between 0 and 1
 		val = val*val;			// Square it.  Produces parabola y: 0 to 1
-		val = val*2;			// Double it.
+		val = val*2.0f;			// Double it.
 		val = val - 1.0f;			// Shift it down
 		return val;
 	}
@@ -1001,7 +1000,7 @@ uint32_t moving_avg(uint32_t *ptrArrNumbers, uint32_t *ptrSum, uint32_t pos, uin
 /*
  * Make adc values seems as though they came from a log-taper potentiometer.
  */
-// TODO: use int as input instead ... otherwise difficult to compare taper cutoff.
+// TODO: Try three line segments instead of two.  With two, the sudden increase is obvious.
 uint16_t pseudo_log(uint16_t x)
 {
 	float32_t y1 = 0.0f;

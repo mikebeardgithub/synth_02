@@ -74,7 +74,7 @@ typedef struct osc_setting
 	uint16_t fm_mod;
 
 	float32_t vco_amp;
-	float32_t vco_amp2;
+	float32_t vco2_amp;
 
 	float32_t lfo_amp;
 	float32_t lfo_amp_am;
