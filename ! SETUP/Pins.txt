@@ -1,9 +1,6 @@
 TODO:
 
--Pot for VCO2 amplitude.  Pot for VCO2 frequency offset.
-	Can use the old C2 (was for volume).
-	Will need to set up another pot.
-	
+
 -Make it work with any buffer size.  (Not sure if that works anymore).
 -Determine a good buffer length -- less than 0.1 second long, I think.
 
@@ -20,6 +17,8 @@ DONE -Use buttons to cycle through waveforms - instead of selector.
 	user_interface.c	update_selector_state()
 DONE -turned off pin C2 (volume)
 DONE -see if 2nd oscillator will work, now that I'm using proper 32-bit floats.
+DONE Pot for VCO2 amplitude. Can use the old C2 (was for volume).
+DONE Pot for VCO2 frequency offset.  Will need to set up another pot.
 
 Bug Fixes
 DONE -when no VCO waveform is chosen, make it output no sound (instead of that high pitches beep).
@@ -52,7 +51,7 @@ PINS - NEW
 	A0		VCO-Frequency			ADCBuffer[0]	
 	
 	C2		VCO2-Amplitude			ADCBuffer[10]
-	??		VC02-Frequency Offset	ADCBuffer[??]
+	B1?		VC02-Frequency Offset	ADCBuffer[7]??
 	
 	A2		LFO-Amplitude			ADCBuffer[2]
 	A3		LFO-Frequency			ADCBuffer[3]	
@@ -69,6 +68,19 @@ PINS - NEW
 	Filter - Pots
 	------------------------
 	
+	
+
+============================================
+PINS FOR AUDIO
+============================================
+#define CODEC_I2S_WS_PIN               GPIO_Pin_4			A4
+#define CODEC_I2C_SCL_PIN              GPIO_Pin_6			B7
+#define CODEC_I2C_SDA_PIN              GPIO_Pin_9			B9
+#define CODEC_I2S_MCK_PIN              GPIO_Pin_7			C7
+#define CODEC_I2S_SCK_PIN              GPIO_Pin_10			C10
+#define CODEC_I2S_SD_PIN               GPIO_Pin_12			C12
+#define AUDIO_RESET_PIN                GPIO_Pin_4			D4
+
 
 ====================================
 PINS - OLD
@@ -152,17 +164,6 @@ PC13	John	LCD DB3								ok
 PC14	John	LCD DB4								ok
 PC15	John`	LCD DB5								ok
 
-
-============================================
-PINS FOR AUDIO
-============================================
-#define CODEC_I2S_WS_PIN               GPIO_Pin_4			A4
-#define CODEC_I2C_SCL_PIN              GPIO_Pin_6			B7
-#define CODEC_I2C_SDA_PIN              GPIO_Pin_9			B9
-#define CODEC_I2S_MCK_PIN              GPIO_Pin_7			C7
-#define CODEC_I2S_SCK_PIN              GPIO_Pin_10			C10
-#define CODEC_I2S_SD_PIN               GPIO_Pin_12			C12
-#define AUDIO_RESET_PIN                GPIO_Pin_4			D4
 
 
 

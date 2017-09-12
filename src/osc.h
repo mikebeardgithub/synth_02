@@ -59,7 +59,7 @@ typedef struct osc_setting
 	float32_t volume;
 
 	float32_t vco_freq;
-	float32_t vco2_freq;
+	float32_t vco2_freqoffset;
 	float32_t lfo_freq;
 
 	uint16_t vco_wav;

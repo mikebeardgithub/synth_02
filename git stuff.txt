@@ -29,7 +29,7 @@ git push -u origin master
 Using GIT GUI
 
 Checkout the 'working' branch (or whatever you called it)
-Stage the changes: click on each file listed under "Unstaged Changes"
+Stage the changes: click on each file listed under "Unstaged Changes" -- If that doesn't work, select the files and do Commit->Stage to Commit
 Enter a commit message.
 Click "Commit"
 Click "Push"

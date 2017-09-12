@@ -22,7 +22,8 @@
 
 #define myTIM2_PRESCALER ((uint16_t)0x03E8)				//want ADC to run every 75ms =13.3Hz board is at 168MHz prescale by 1000
 #define myTIM2_PERIOD ((uint32_t)0x3138)				//so need to count to count to 12600=0x3138 gona change for testing
-#define NUM_CHANNELS 12
+// #define NUM_CHANNELS 12
+#define NUM_CHANNELS 13		// MB:
 #define ACTIVE 1
 #define NOT_ACTIVE 0
 

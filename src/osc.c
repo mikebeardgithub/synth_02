@@ -20,9 +20,9 @@ volatile float32_t buffer_adsr_fm[LENGTH_BUFFER] = {0};
 // Defaults
 osc_setting osc =
 {
-	.vco_freq = 1400.0,
-	.vco2_freq = 1400.0,
-	.lfo_freq = 1.73,
+	.vco_freq = 1400.0f,
+	.vco2_freqoffset = 0.0f,
+	.lfo_freq = 1.73f,
 
 	.vco_wav = sine,
 	.lfo_wav = sine,		// other2 means OFF, for now.
@@ -81,6 +81,11 @@ uint32_t mov_avg6 [MOV_AVG_LENGTH_BUFFER] = {0};
 uint32_t mov_avg_index6 = 0;
 uint32_t mov_avg_sum6;
 
+uint32_t mov_avg7 [MOV_AVG_LENGTH_BUFFER] = {0};
+uint32_t mov_avg_index7 = 0;
+uint32_t mov_avg_sum7;
+
+
 
 #define SPIKE_FILTER_LEN		2
 float32_t spike_buff [SPIKE_FILTER_LEN] = {0};
@@ -131,14 +136,6 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		mov_avg_index5 = 0;
 	}
 
-	// C2
-	osc.vco2_amp = moving_avg(mov_avg6, &mov_avg_sum6, mov_avg_index6, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[10] & 0xfffc));
-	mov_avg_index6++;
-	if (mov_avg_index6 >= MOV_AVG_LENGTH_BUFFER)
-	{
-		mov_avg_index6 = 0;
-	}
-
 //	osc.volume = (float32_t) osc.volume / 2048;
 //	osc.vco_amp = osc.vco_amp * osc.volume;
 
@@ -151,6 +148,23 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	{
 		mov_avg_index1 = 0;
 	}
+
+	// C2
+	osc.vco2_amp = moving_avg(mov_avg6, &mov_avg_sum6, mov_avg_index6, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[10] & 0xfffc));
+	mov_avg_index6++;
+	if (mov_avg_index6 >= MOV_AVG_LENGTH_BUFFER)
+	{
+		mov_avg_index6 = 0;
+	}
+
+	// B1
+	osc.vco2_freqoffset = moving_avg(mov_avg7, &mov_avg_sum7, mov_avg_index7, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[7] & 0xfffc));
+	mov_avg_index7++;
+	if (mov_avg_index7 >= MOV_AVG_LENGTH_BUFFER)
+	{
+		mov_avg_index7 = 0;
+	}
+
 
 	// A2
 	osc.lfo_amp = moving_avg(mov_avg3, &mov_avg_sum3, mov_avg_index3, MOV_AVG_LENGTH_BUFFER, (ADCBuffer[2] & 0xfffc));
@@ -189,7 +203,8 @@ void generate_waveforms(uint16_t start, uint16_t end)
 
 	//	// Calculate angle amount to increment per sample.
 	volatile float32_t rads_per_sample_vco = osc.vco_freq / ONE_SECOND;		// Radians to increment for each iteration.
-	volatile float32_t rads_per_sample_vco2 = osc.vco_freq / TWO_SECOND;
+	// volatile float32_t rads_per_sample_vco2 = osc.vco_freq / TWO_SECOND;
+	volatile float32_t rads_per_sample_vco2 = rads_per_sample_vco + osc.vco2_freqoffset / ONE_SECOND;
 	//volatile float32_t rads_per_sample_vco2 = rads_per_sample_vco/2.0f;		// Radians to increment for each iteration.
 	volatile float32_t rads_per_sample_lfo = osc.lfo_freq / ONE_SECOND;		// Radians to increment for each iteration.
 
