@@ -104,7 +104,8 @@ volatile float32_t delta = 0.0;
 volatile float32_t theta_vco = 0.0f;
 volatile float32_t theta_vco2 = 0.0f;
 volatile float32_t theta_lfo = 0.0f;
-volatile float32_t theta_adsr = 1.0f;
+// volatile float32_t theta_adsr = 1.0f;
+volatile float32_t theta_adsr = 0.0f;
 
 volatile uint16_t testflag = 0;
 
@@ -212,6 +213,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 //	if(adsr_settings.am_mod == ON || adsr_settings.fm_mod == ON)
 //	{
 		adsr(start, end);
+		// adsr_rad(start, end);
 //	}
 
 	// No LFO
@@ -425,7 +427,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	theta_vco = fast_fmod(theta_vco, TWO_PI);
 	theta_vco2 = fast_fmod(theta_vco2, TWO_PI);
 	theta_lfo = fast_fmod(theta_lfo, TWO_PI);
-	theta_adsr = fast_fmod(theta_adsr, TWO_PI);
+	// theta_adsr = fast_fmod(theta_adsr, TWO_PI);
 
 	return;
 }
@@ -466,17 +468,26 @@ void adsr(uint16_t start, uint16_t end)
 	volatile float32_t angle_decay = PI/adsr_settings.decay_len;
 	volatile float32_t angle_release = PI/adsr_settings.release_len;
 
-	if(adsr_settings.am_mod == OFF && adsr_settings.fm_mod == OFF)
+	// Clear out adsr buffers if we're not using them.  Otherwise, they might still get used.
+	if(adsr_settings.am_mod == OFF)
 	{
 		for(i = start; i < end; i++)
 		{
-			buffer_adsr_am[i] = 0;
-			buffer_adsr_fm[i] = 0;
+			buffer_adsr_am[i] = 0.0f;
 		}
 	}
 
-	// Generic ADSR envelope
+	if(adsr_settings.fm_mod == OFF)
+	{
+		for(i = start; i < end; i++)
+		{
+			buffer_adsr_fm[i] = 0.0f;
+		}
+	}
+
+	// Generic ADSR envelope.  Always generate this envelope, even if no AM mod of ADSR.
 	// The waveform contains 5 segments (asdr + a blank space)
+	// if(adsr_settings.am_mod == ON || adsr_settings.fm_mod == ON)
 	if(adsr_settings.am_mod == ON || adsr_settings.fm_mod == ON)
 	{
 		for(i = start; i < end; i++)
@@ -619,12 +630,31 @@ void adsr(uint16_t start, uint16_t end)
 void adsr_rad(uint16_t start, uint16_t end)
 {
 	volatile uint16_t i = 0;
-	adsr_settings.attack_len = ADCBuffer[5]*20;		// A5
-	adsr_settings.decay_len = (ADCBuffer[6])*20;	// A6
-	adsr_settings.sustain_len = ADCBuffer[7]*20;	// A7
-	adsr_settings.release_len = ADCBuffer[8]*20;	// B0
-	adsr_settings.blank_len = ADCBuffer[10]*20;		// C0
-	adsr_settings.sustain_amp = (float32_t) ADCBuffer[12]/4095;		// C4
+
+//	adsr_settings.attack_len = ADCBuffer[5]*20;		// A5
+//	adsr_settings.decay_len = (ADCBuffer[6])*20;	// A6
+//	adsr_settings.sustain_len = ADCBuffer[7]*20;	// A7
+//	adsr_settings.release_len = ADCBuffer[8]*20;	// B0
+//	adsr_settings.blank_len = ADCBuffer[10]*20;		// C0
+//	adsr_settings.sustain_amp = (float32_t) ADCBuffer[12]/4095;		// C4
+
+	adsr_settings.attack_len =  (ADCBuffer[4] & 0xfffc)*20;		// A5
+	adsr_settings.decay_len =   (ADCBuffer[9] & 0xfffc)*20;	// C1
+	adsr_settings.sustain_len = (ADCBuffer[5] & 0xfffc)*20;	// A7
+	adsr_settings.release_len = (ADCBuffer[6] & 0xfffc)*20;	// B0
+	adsr_settings.blank_len =   (ADCBuffer[8] & 0xfffc)*20;		// C0
+
+	// C4
+	uint16_t tempf = pseudo_log(ADCBuffer[11] & 0xfffc);
+	adsr_settings.sustain_amp = moving_avg(mov_avg4, &mov_avg_sum4, mov_avg_index4, MOV_AVG_LENGTH_BUFFER, tempf);
+	mov_avg_index4++;
+	if (mov_avg_index4 >= MOV_AVG_LENGTH_BUFFER)
+	{
+		mov_avg_index4 = 0;
+	}
+
+	adsr_settings.sustain_amp = adsr_settings.sustain_amp/8000.0f;
+
 
 	// One cycle is the entire ADSR envelope plus blank space.
 	volatile uint32_t samples_cycle_adsr = adsr_settings.attack_len + adsr_settings.decay_len + adsr_settings.sustain_len + adsr_settings.release_len + adsr_settings.blank_len;
@@ -649,6 +679,24 @@ void adsr_rad(uint16_t start, uint16_t end)
 	volatile float32_t release_start_rad = sustain_start_rad + adsr_settings.sustain_len_rad;
 	volatile float32_t blank_start_rad = release_start_rad + adsr_settings.release_len_rad;
 	volatile float32_t blank_end_rad = blank_start_rad + adsr_settings.blank_len_rad;
+
+
+	// Clear out adsr buffers if we're not using them.  Otherwise, they might still get used.
+	if(adsr_settings.am_mod == OFF)
+	{
+		for(i = start; i < end; i++)
+		{
+			buffer_adsr_am[i] = 0.0f;
+		}
+	}
+
+	if(adsr_settings.fm_mod == OFF)
+	{
+		for(i = start; i < end; i++)
+		{
+			buffer_adsr_fm[i] = 0.0f;
+		}
+	}
 
 	// for testing - should be 6.28...
 	// volatile float32_t adsr_length_rad = adsr_settings.attack_len_rad + decay_start_rad + adsr_settings.decay_len_rad + sustain_start_rad + adsr_settings.sustain_len_rad + release_start_rad + adsr_settings.release_len_rad + blank_start_rad + adsr_settings.blank_len_rad;
@@ -818,8 +866,8 @@ void adsr_rad(uint16_t start, uint16_t end)
 		}
 	} // end of adsr fm
 
-	testflag = 0;
-
+	// testflag = 0;
+	theta_adsr = fast_fmod(theta_adsr, TWO_PI);
 }
 
 
