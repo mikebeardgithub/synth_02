@@ -56,7 +56,7 @@ volatile uint32_t sample_count_adsr = 0;
 /*
  * Moving average -- TODO: remove after testing.
  */
-#define MOV_AVG_LENGTH_BUFFER		1024
+#define MOV_AVG_LENGTH_BUFFER		32 // 1024
 uint32_t mov_avg1 [MOV_AVG_LENGTH_BUFFER] = {0};
 uint32_t mov_avg_index1 = 0;
 uint32_t mov_avg_sum1;
@@ -426,44 +426,6 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	theta_vco2 = fast_fmod(theta_vco2, TWO_PI);
 	theta_lfo = fast_fmod(theta_lfo, TWO_PI);
 	theta_adsr = fast_fmod(theta_adsr, TWO_PI);
-
-	return;
-}
-
-
-/*
- * Clean version - for testing only
- * TODO: remove after testing.
- */
-void generate_waveforms2(uint16_t start, uint16_t end)
-{
-	uint32_t i = 0;
-	osc.vco_wav = sine;
-	// osc.vco_freq = (float) (ADCBuffer[1] & 0xffff) * 2 * PI;					// A1
-
-	// ---------------------------------------
-	// Someone else's moving average filter.
-	// Found here: https://gist.github.com/bmccormack/d12f4bf0c96423d03f82
-	// Note that this discards bits and then smooths it.  What if it did this the other way around?
-	// osc.vco_freq = log10(ADCBuffer[1] & 0xffff)*200;
-	osc.vco_freq = moving_avg(mov_avg1, &mov_avg_sum1, mov_avg_index1, MOV_AVG_LENGTH_BUFFER, ADCBuffer[1] & 0xfffc);
-	mov_avg_index1++;
-	if (mov_avg_index1 >= MOV_AVG_LENGTH_BUFFER)
-	{
-		mov_avg_index1 = 0;
-	}
-
-	float32_t rads_per_sample = osc.vco_freq / ONE_SECOND;		// Radians to increment for each iteration.
-
-	for(i = start; i < end; i++)
-	{
-		theta_vco = theta_vco + rads_per_sample;
-		// buffer_output[i] = osc.vco_amp + osc.vco_amp*arm_sin_f32(theta_vco);
-		// buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_square_angle(theta_vco);
-		buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_sawtooth_angle(theta_vco);
-	}
-
-	theta_vco = fast_fmod(theta_vco, 2 * PI);
 
 	return;
 }
@@ -869,9 +831,9 @@ float32_t gen_square_angle(float32_t angle)
 	angle = fast_fmod(angle, 2*PI);
 	if (angle < PI)
 	{
-		return -1;
+		return -1.0f;
 	}
-	return 1;
+	return 1.0f;
 }
 
 

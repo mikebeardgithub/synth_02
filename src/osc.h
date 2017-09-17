@@ -31,8 +31,12 @@
 #define ONE_DIV_4_PI			0.07957747155
 
 #define VOL                     80
-#define LENGTH_BUFFER           64
-#define BUFF_LEN_HALF           32
+//#define LENGTH_BUFFER           64
+//#define BUFF_LEN_HALF           32
+
+#define LENGTH_BUFFER           1024
+#define BUFF_LEN_HALF           512
+
 
 //#define OFF                     0
 //#define ON                      1

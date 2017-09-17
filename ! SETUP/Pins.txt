@@ -1,12 +1,9 @@
 TODO:
 
 
--Make it work with any buffer size.  (Not sure if that works anymore).
--Determine a good buffer length -- less than 0.1 second long, I think.
-
+-filter
 -make it mono 
 -make adsr use floats
-
 
 DONE -remove LCD stuff
 DONE -change all 1.0 to 1.0f --- to make sure it's 32-bit floats and not 64-bit floats.
@@ -19,16 +16,17 @@ DONE -turned off pin C2 (volume)
 DONE -see if 2nd oscillator will work, now that I'm using proper 32-bit floats.
 DONE Pot for VCO2 amplitude. Can use the old C2 (was for volume).
 DONE Pot for VCO2 frequency offset.  Will need to set up another pot.
+DONE -Use a longer buffer length and a shorter moving average length.
 
 Bug Fixes
 DONE -when no VCO waveform is chosen, make it output no sound (instead of that high pitches beep).
 DONE -When no LFO waveform is chosen, make sure the VCO still outputs, but with no modulation.
--When LFO modulation type changes from am->fm->etc, make sure output volume doesn't change
 DONE -ADSR - when no modulation is chosen, make sure VCO outputs cleanly
--ADSR - make sure it does correct modulation types: am, fm, am+fm, off.
--ADSR - AM modulation sounds noisy - clipping?
 DONE -2nd VCO - make it change frequencies smoothly.  For some reason it seems to step up and down discretely.  Needed to do a fmod on the vco2 angle.
 -FM modulation.  When LFO is square and VCO is non-sine, it turns off the waveform for part of cycle.  As though it were AM modulating or something
+-ADSR - make sure it does correct modulation types: am, fm, am+fm, off.
+-ADSR - AM modulation sounds noisy - clipping?
+-When LFO modulation type changes from am->fm->etc, make sure output volume doesn't change
 	
 
 	
