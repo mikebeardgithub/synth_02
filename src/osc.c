@@ -6,6 +6,7 @@
  */
 
 #include "osc.h"
+#include "biquad.h"
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -423,6 +424,35 @@ void generate_waveforms(uint16_t start, uint16_t end)
 			buffer_output[i] = buffer_output[i]*buffer_adsr_am[i];
 		}
 	}
+
+	// --------------------------------------------
+	// Try to filter with biquad.
+	sf_biquad_state_st lowpass;
+	sf_lowpass(&lowpass, SAMPLERATE, 400.0f, 1.0f);
+
+	// For biquad.
+	// Need input and output buffers of type sf_sample_st.
+	sf_sample_st input[BUFF_LEN_HALF];
+	sf_sample_st output[BUFF_LEN_HALF];
+
+	// Convert buffer_output[i] into input (floats).
+	for(i = start/2; i < (end/2) ; i++)
+	{
+		input[i].L = (float32_t) buffer_output[2*i];
+		input[i].R = (float32_t) buffer_output[2*i+1];
+	}
+
+	// This introduces glitches. (But it seems to be filtering.)
+	sf_biquad_process(&lowpass, BUFF_LEN_HALF, input, output);
+
+	// Convert output back into buffer_output[i] (ints).
+	for(i = start/2; i < (end/2) ; i++)
+	{
+		buffer_output[2*i] = (uint16_t) output[i].L;
+		buffer_output[2*i+1] = (uint16_t) output[i].R;
+	}
+	// --------------------------------------------
+
 
 	theta_vco = fast_fmod(theta_vco, TWO_PI);
 	theta_vco2 = fast_fmod(theta_vco2, TWO_PI);

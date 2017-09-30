@@ -1,9 +1,14 @@
 TODO:
 
 
--filter
--make it mono 
+-add filter(s)
+-make code explictly acknowledge left & right channels.   Maybe make a struct for sample with L and R members.
+	** Maybe not -- I forgot that the API requires a buffer that doesn't work that way...
 -make adsr use radians (adsr_rad)
+-add delay/reverb
+-add noise - https://www.embeddedrelated.com/showcode/311.php
+-add PWM for square wave -- will need another pot
+-make it so you can combine different shape waves -- ie. another button for waveshapes for second oscillator
 
 DONE -remove LCD stuff
 DONE -change all 1.0 to 1.0f --- to make sure it's 32-bit floats and not 64-bit floats.
@@ -29,7 +34,9 @@ DONE -ADSR - AM modulation sounds noisy - clipping?
 -When LFO modulation type changes from am->fm->etc, make sure output volume doesn't change
 	
 
-	
+====================================
+Added biquad, snd, and mem -- for biquad functions.  
+====================================
 	
 ====================================
 PINS - NEW

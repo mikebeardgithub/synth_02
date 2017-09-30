@@ -14,13 +14,13 @@
 #include "stm32f4xx_it.h"
 
 #define SAMPLERATE              48000
-#define QUARTER_SECOND			24000			// Half second worth of samples (per channel).
-#define HALF_SECOND				48000			// Half second worth of samples (per channel).
-#define ONE_SECOND				96000			// One second worth of samples (per channel).
-#define TWO_SECOND				192000			// Two seconds worth of samples (per channel).
-#define FIVE_SECOND				480000			// Four seconds worth of samples (per channel).
-#define TEN_SECOND				960000			// Ten seconds worth of samples (per channel).
-#define TWENTY_SECOND			1920000			// 20 seconds worth of samples (per channel).
+#define QUARTER_SECOND			24000			// Half second worth of samples (both channels).
+#define HALF_SECOND				48000			// Half second worth of samples (both channels).
+#define ONE_SECOND				96000			// One second worth of samples (both channels).
+#define TWO_SECOND				192000			// Two seconds worth of samples (both channels).
+#define FIVE_SECOND				480000			// Four seconds worth of samples (both channels).
+#define TEN_SECOND				960000			// Ten seconds worth of samples (both channels).
+#define TWENTY_SECOND			1920000			// 20 seconds worth of samples (both channels).
 
 #define TWO_PI					6.28318530718
 #define ONE_DIV_PI				0.31830988618

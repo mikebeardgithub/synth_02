@@ -1,0 +1,13 @@
+biquad.c:15:6:sf_biquad_process	96	static
+biquad.c:77:20:state_reset	16	static
+biquad.c:85:20:state_scale	16	static
+biquad.c:94:20:state_passthrough	16	static
+biquad.c:99:20:state_zero	16	static
+biquad.c:104:6:sf_lowpass	48	static
+biquad.c:128:6:sf_highpass	48	static
+biquad.c:152:6:sf_bandpass	48	static
+biquad.c:174:6:sf_notch	48	static
+biquad.c:196:6:sf_peaking	56	static
+biquad.c:224:6:sf_allpass	48	static
+biquad.c:247:6:sf_lowshelf	80	static
+biquad.c:282:6:sf_highshelf	80	static
