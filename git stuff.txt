@@ -1,3 +1,11 @@
+---------------------------------------------------------------------------
+	git status					<--- make sure you're on the working branch.  If not use git checkout working (or something like that).
+	git add .
+	git commit -m"bla bla"
+	git push origin working		<--- updates the working branch from origin (I guess origin is local or something).
+
+---------------------------------------------------------------------------
+
 After setting up the project, right click and choose "Git Create repository here"
 Click ok or whatever.
 Then open a bash shell

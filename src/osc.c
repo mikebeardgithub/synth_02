@@ -407,6 +407,33 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		}
 	}
 
+	// Noise VCO
+	else if(osc.vco_wav == noise)
+	{
+		for(i = start; i < end; i++)
+		{
+			theta_vco = theta_vco + rads_per_sample_vco;
+			theta_vco2 = theta_vco2 + rads_per_sample_vco2;
+			if(osc.fm_mod == ON)
+			{
+				// buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				// buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*gen_triangle_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
+				// buffer_output[i] = buffer_output[i] + buffer_output2[i];
+
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_AWGN();
+			}
+			else
+			{
+				// buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + 0.3f * buffer_adsr_fm[i]);
+				// buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*gen_triangle_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
+				// buffer_output[i] = buffer_output[i] + buffer_output2[i];
+
+				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_AWGN();
+			}
+		}
+	}
+
+
 	// AM Modulate VCO with LFO
 	if(osc.am_mod == ON)
 	{
@@ -1082,3 +1109,43 @@ uint16_t pseudo_log(uint16_t x)
 
 	return (uint16_t) y2;
 }
+
+/*
+ *  Found here: https://www.embeddedrelated.com/showcode/311.php
+ *  Generates additive white Gaussian Noise samples with zero mean and a standard deviation of 1.
+ */
+float32_t gen_AWGN()
+{
+	float32_t temp1;
+	float32_t temp2;
+	float32_t result;
+	int16_t p;
+
+	p = 1;
+
+	while( p > 0 )
+	{
+		// rand() function generates an integer between 0 and
+		// RAND_MAX, which is defined in stdlib.h.
+		temp2 = ( rand() / ( (double)RAND_MAX ) );
+
+		// If temp2 is >= (RAND_MAX / 2)
+		if ( temp2 == 0.0f )
+		{
+			p = 1;
+		}
+
+		// Else if temp2 is < (RAND_MAX / 2)
+		else
+		{
+			p = -1;
+		}
+	}
+
+	// TODO: Use fast cos: arm_cos_f32 ???
+	temp1 = cos( ( 2.0f * (float32_t)PI ) * rand() / ( (float32_t)RAND_MAX ) );
+	result = sqrt( -2.0f * log( temp2 ) ) * temp1;
+
+  return result;	// return the generated random sample to the caller
+
+}// end AWGN_generator()

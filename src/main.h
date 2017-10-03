@@ -38,7 +38,8 @@ typedef enum wave_shape
 	square = 2,
 	sawtooth = 3,
 	triangle = 4,
-	lastwave = 5
+	noise = 5,
+	lastwave = 6
 } wave_shape;
 
 typedef enum button_type
