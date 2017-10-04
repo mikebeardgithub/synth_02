@@ -29,7 +29,7 @@ change to branch using "checkout"
 update the branch with the latest code
 
 change to master branch using "checkout"
-git merge [branch name]	-m"Your message"
+git merge [non-master branch name]	-m"Your message"
 git push -u origin master
 
 

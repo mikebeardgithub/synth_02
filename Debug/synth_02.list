@@ -7,13 +7,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         00005e94  08000188  08000188  00010188  2**3
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       00000810  0800601c  0800601c  0001601c  2**2
+  2 .rodata       00000870  0800601c  0800601c  0001601c  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .init_array   00000004  0800682c  0800682c  0001682c  2**2
+  3 .init_array   00000004  0800688c  0800688c  0001688c  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  4 .fini_array   00000004  08006830  08006830  00016830  2**2
+  4 .fini_array   00000004  08006890  08006890  00016890  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  5 .data         000005a0  20000000  08006834  00020000  2**2
+  5 .data         000005a0  20000000  08006894  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
   6 .ccmram       00000000  10000000  10000000  000205a0  2**0
                   CONTENTS
@@ -37,9 +37,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
  16 .comment      000000ee  00000000  00000000  0003a113  2**0
                   CONTENTS, READONLY
- 17 .debug_frame  00003f38  00000000  00000000  0003a204  2**2
+ 17 .debug_frame  00004054  00000000  00000000  0003a204  2**2
                   CONTENTS, READONLY, DEBUGGING
- 18 .debug_loc    000000c8  00000000  00000000  0003e13c  2**0
+ 18 .debug_loc    000000c8  00000000  00000000  0003e258  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 19 .stabstr      000001c5  00000000  00000000  0003e320  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -9348,8 +9350,8 @@ void  init_push_buttons(){
 
 0800351c <main>:
 
-/* Globals */
-extern uint16_t buffer_output[LENGTH_BUFFER];
+
+
 
 int main(void)
 {
@@ -13044,7 +13046,6 @@ float32_t gen_AWGN()
  80052b0:	b580      	push	{r7, lr}
  80052b2:	b082      	sub	sp, #8
  80052b4:	af00      	add	r7, sp, #0
-	// float32_t temp = drand48();
 	float32_t temp = (float32_t) rand() / RAND_MAX;
  80052b6:	f000 fd39 	bl	8005d2c <rand>
  80052ba:	ee07 0a90 	vmov	s15, r0
@@ -13052,7 +13053,6 @@ float32_t gen_AWGN()
  80052c2:	eddf 6a07 	vldr	s13, [pc, #28]	; 80052e0 <gen_AWGN+0x30>
  80052c6:	eec7 7a26 	vdiv.f32	s15, s14, s13
  80052ca:	edc7 7a01 	vstr	s15, [r7, #4]
-	// return (temp * 2.0f - 1.0f) / 2.0f;
 	return temp;
  80052ce:	687b      	ldr	r3, [r7, #4]
  80052d0:	ee07 3a90 	vmov	s15, r3
@@ -13151,7 +13151,7 @@ Reset_Handler:
 
 CopyDataInit:
   ldr  r3, =_sidata
- 8005320:	08006834 	.word	0x08006834
+ 8005320:	08006894 	.word	0x08006894
   ldr  r3, [r3, r1]
   str  r3, [r0, r1]
   adds  r1, r1, #4
@@ -14310,10 +14310,10 @@ void init_state(){
  80058c2:	3501      	adds	r5, #1
  80058c4:	e7f8      	b.n	80058b8 <__libc_init_array+0x2c>
  80058c6:	bd70      	pop	{r4, r5, r6, pc}
- 80058c8:	0800682c 	.word	0x0800682c
- 80058cc:	0800682c 	.word	0x0800682c
- 80058d0:	08006830 	.word	0x08006830
- 80058d4:	0800682c 	.word	0x0800682c
+ 80058c8:	0800688c 	.word	0x0800688c
+ 80058cc:	0800688c 	.word	0x0800688c
+ 80058d0:	08006890 	.word	0x08006890
+ 80058d4:	0800688c 	.word	0x0800688c
 
 080058d8 <malloc>:
  80058d8:	4b02      	ldr	r3, [pc, #8]	; (80058e4 <malloc+0xc>)
@@ -14321,7 +14321,7 @@ void init_state(){
  80058dc:	6818      	ldr	r0, [r3, #0]
  80058de:	f000 b803 	b.w	80058e8 <_malloc_r>
  80058e2:	bf00      	nop
- 80058e4:	2000059c 	.word	0x2000059c
+ 80058e4:	2000018c 	.word	0x2000018c
 
 080058e8 <_malloc_r>:
  80058e8:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -14600,7 +14600,7 @@ void init_state(){
  8005b8e:	0052      	lsls	r2, r2, #1
  8005b90:	e7fa      	b.n	8005b88 <_malloc_r+0x2a0>
  8005b92:	bf00      	nop
- 8005b94:	2000009c 	.word	0x2000009c
+ 8005b94:	20000190 	.word	0x20000190
  8005b98:	f8d5 b008 	ldr.w	fp, [r5, #8]
  8005b9c:	f8db 6004 	ldr.w	r6, [fp, #4]
  8005ba0:	f026 0603 	bic.w	r6, r6, #3
@@ -14746,7 +14746,7 @@ void init_state(){
  8005d06:	e8bd 8ff0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, pc}
  8005d0a:	bf00      	nop
  8005d0c:	2000497c 	.word	0x2000497c
- 8005d10:	200004a8 	.word	0x200004a8
+ 8005d10:	2000059c 	.word	0x2000059c
  8005d14:	00000080 	.word	0x00000080
  8005d18:	20004978 	.word	0x20004978
  8005d1c:	20004974 	.word	0x20004974
@@ -14800,7 +14800,7 @@ void init_state(){
  8005d8c:	f023 4000 	bic.w	r0, r3, #2147483648	; 0x80000000
  8005d90:	bd10      	pop	{r4, pc}
  8005d92:	bf00      	nop
- 8005d94:	2000059c 	.word	0x2000059c
+ 8005d94:	2000018c 	.word	0x2000018c
  8005d98:	5851f42d 	.word	0x5851f42d
  8005d9c:	4c957f2d 	.word	0x4c957f2d
 
@@ -14882,8 +14882,8 @@ void init_state(){
  8005e54:	2001      	movs	r0, #1
  8005e56:	e8bd 83f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, pc}
  8005e5a:	bf00      	nop
- 8005e5c:	2000009c 	.word	0x2000009c
- 8005e60:	200004a8 	.word	0x200004a8
+ 8005e5c:	20000190 	.word	0x20000190
+ 8005e60:	2000059c 	.word	0x2000059c
  8005e64:	20004980 	.word	0x20004980
  8005e68:	00000080 	.word	0x00000080
 
@@ -15039,10 +15039,10 @@ void init_state(){
  8005fd0:	60cb      	str	r3, [r1, #12]
  8005fd2:	e77b      	b.n	8005ecc <_free_r+0x60>
  8005fd4:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
- 8005fd8:	2000009c 	.word	0x2000009c
- 8005fdc:	200004a4 	.word	0x200004a4
+ 8005fd8:	20000190 	.word	0x20000190
+ 8005fdc:	20000598 	.word	0x20000598
  8005fe0:	2000497c 	.word	0x2000497c
- 8005fe4:	200000a4 	.word	0x200000a4
+ 8005fe4:	20000198 	.word	0x20000198
 
 08005fe8 <_sbrk>:
  8005fe8:	4b04      	ldr	r3, [pc, #16]	; (8005ffc <_sbrk+0x14>)

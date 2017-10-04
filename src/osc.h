@@ -148,4 +148,7 @@ uint16_t pseudo_log(uint16_t x);
 void biquad_setup(uint16_t start, uint16_t end);
 
 float32_t gen_AWGN();
+float gen_AWGN_triangle(void);
+float gen_AWGN_triangle2(float32_t lower, float32_t upper, float32_t max);
+
 #endif /* OSC_H_ */

@@ -1,0 +1,7 @@
+pink_noise.c:9:6:cdelay2	16	static
+pink_noise.c:80:9:corr	72	static
+pink_noise.c:175:9:cross_corr	80	static
+pink_noise.c:280:8:ran1f	48	static
+pink_noise.c:353:8:ranh	40	static
+pink_noise.c:423:6:timestamp	24	static
+pink_noise.c:471:6:wrap2	16	static

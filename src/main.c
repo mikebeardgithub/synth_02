@@ -48,6 +48,16 @@ SOFTWARE.
 /* Globals */
 extern uint16_t buffer_output[LENGTH_BUFFER];
 
+
+
+
+
+
+
+
+
+
+
 int main(void)
 {
 	/**
@@ -139,3 +149,5 @@ void EVAL_AUDIO_Error_CallBack(void* pData)
 {
 	STM_EVAL_LEDOn(LED3);
 }
+
+
