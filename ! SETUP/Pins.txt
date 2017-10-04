@@ -4,6 +4,8 @@ TODO:
 -add filter(s)
 -make code explictly acknowledge left & right channels.   Maybe make a struct for sample with L and R members.
 	** Maybe not -- I forgot that the API requires a buffer that doesn't work that way...
+-arpegiator
+-preset chords for VCOs?
 -make adsr use radians (adsr_rad)
 -add delay/reverb
 -add noise - https://www.embeddedrelated.com/showcode/311.php

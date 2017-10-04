@@ -144,5 +144,8 @@ float32_t gen_triangle_integral_angle(float32_t angle);
 float32_t fast_fmod(float32_t x, float32_t y);
 uint32_t moving_avg(uint32_t *ptrArrNumbers, uint32_t *ptrSum, uint32_t pos, uint32_t len, uint16_t nextNum);
 uint16_t pseudo_log(uint16_t x);
+
+void biquad_setup(uint16_t start, uint16_t end);
+
 float32_t gen_AWGN();
 #endif /* OSC_H_ */

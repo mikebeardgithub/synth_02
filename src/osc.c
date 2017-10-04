@@ -414,13 +414,16 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		{
 			theta_vco = theta_vco + rads_per_sample_vco;
 			theta_vco2 = theta_vco2 + rads_per_sample_vco2;
+
+			buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_AWGN();
+
 			if(osc.fm_mod == ON)
 			{
 				// buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
 				// buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*gen_triangle_angle(theta_vco2 + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
 				// buffer_output[i] = buffer_output[i] + buffer_output2[i];
 
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_AWGN();
+				// buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_AWGN();
 			}
 			else
 			{
@@ -428,11 +431,10 @@ void generate_waveforms(uint16_t start, uint16_t end)
 				// buffer_output2[i] = osc.vco2_amp + osc.vco2_amp*gen_triangle_angle(theta_vco2 + 0.3f * buffer_adsr_fm[i]);
 				// buffer_output[i] = buffer_output[i] + buffer_output2[i];
 
-				buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_AWGN();
+				// buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_AWGN();
 			}
 		}
 	}
-
 
 	// AM Modulate VCO with LFO
 	if(osc.am_mod == ON)
@@ -452,34 +454,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		}
 	}
 
-	// --------------------------------------------
-	// Try to filter with biquad.
-	sf_biquad_state_st lowpass;
-	sf_lowpass(&lowpass, SAMPLERATE, 400.0f, 1.0f);
-
-	// For biquad.
-	// Need input and output buffers of type sf_sample_st.
-	sf_sample_st input[BUFF_LEN_HALF];
-	sf_sample_st output[BUFF_LEN_HALF];
-
-	// Convert buffer_output[i] into input (floats).
-	for(i = start/2; i < (end/2) ; i++)
-	{
-		input[i].L = (float32_t) buffer_output[2*i];
-		input[i].R = (float32_t) buffer_output[2*i+1];
-	}
-
-	// This introduces glitches. (But it seems to be filtering.)
-	sf_biquad_process(&lowpass, BUFF_LEN_HALF, input, output);
-
-	// Convert output back into buffer_output[i] (ints).
-	for(i = start/2; i < (end/2) ; i++)
-	{
-		buffer_output[2*i] = (uint16_t) output[i].L;
-		buffer_output[2*i+1] = (uint16_t) output[i].R;
-	}
-	// --------------------------------------------
-
+	// biquad_setup(start, end);
 
 	theta_vco = fast_fmod(theta_vco, TWO_PI);
 	theta_vco2 = fast_fmod(theta_vco2, TWO_PI);
@@ -1110,42 +1085,51 @@ uint16_t pseudo_log(uint16_t x)
 	return (uint16_t) y2;
 }
 
-/*
- *  Found here: https://www.embeddedrelated.com/showcode/311.php
- *  Generates additive white Gaussian Noise samples with zero mean and a standard deviation of 1.
- */
-float32_t gen_AWGN()
+void biquad_setup(uint16_t start, uint16_t end)
 {
-	float32_t temp1;
-	float32_t temp2;
-	float32_t result;
-	int16_t p;
+	// --------------------------------------------
+	// Try to filter with biquad.
+	uint16_t i = 0;
+	sf_biquad_state_st lowpass;
+	sf_lowpass(&lowpass, SAMPLERATE, 400.0f, 1.0f);
 
-	p = 1;
+	// For biquad.
+	// Need input and output buffers of type sf_sample_st.
+	sf_sample_st input[BUFF_LEN_HALF];
+	sf_sample_st output[BUFF_LEN_HALF];
 
-	while( p > 0 )
+	// Convert buffer_output[i] into input (floats).
+	for(i = start/2; i < (end/2) ; i++)
 	{
-		// rand() function generates an integer between 0 and
-		// RAND_MAX, which is defined in stdlib.h.
-		temp2 = ( rand() / ( (double)RAND_MAX ) );
-
-		// If temp2 is >= (RAND_MAX / 2)
-		if ( temp2 == 0.0f )
-		{
-			p = 1;
-		}
-
-		// Else if temp2 is < (RAND_MAX / 2)
-		else
-		{
-			p = -1;
-		}
+		input[i].L = (float32_t) buffer_output[2*i];
+		input[i].R = (float32_t) buffer_output[2*i+1];
 	}
 
-	// TODO: Use fast cos: arm_cos_f32 ???
-	temp1 = cos( ( 2.0f * (float32_t)PI ) * rand() / ( (float32_t)RAND_MAX ) );
-	result = sqrt( -2.0f * log( temp2 ) ) * temp1;
+	// This introduces glitches. (But it seems to be filtering.)
+	sf_biquad_process(&lowpass, BUFF_LEN_HALF, input, output);
 
-  return result;	// return the generated random sample to the caller
+	// Convert output back into buffer_output[i] (ints).
+	for(i = start/2; i < (end/2) ; i++)
+	{
+		buffer_output[2*i] = (uint16_t) output[i].L;
+		buffer_output[2*i+1] = (uint16_t) output[i].R;
+	}
+	// --------------------------------------------
+}
 
-}// end AWGN_generator()
+float32_t gen_AWGN()
+{
+	float32_t temp = (float32_t) rand() / RAND_MAX;
+	return temp;
+}
+
+
+
+
+
+
+
+
+
+
+

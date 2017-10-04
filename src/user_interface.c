@@ -29,8 +29,10 @@ void update_lfo_wave()
 	}
 }
 
-void update_lfo_mod()
+void update_lfo_mod_old()
 {
+	// TODO: make modulation modes in this order: None, AM, FM, AM+FM
+
 	if(lfo_mod.fm_mod == OFF)
 	{
 		lfo_mod.fm_mod = ON;
@@ -52,6 +54,33 @@ void update_lfo_mod()
 		}
 	}
 }
+
+void update_lfo_mod()
+{
+	// TODO: make modulation modes in this order: None, AM, FM, AM+FM
+
+	if(lfo_mod.am_mod == OFF)
+	{
+		lfo_mod.am_mod = ON;
+
+		// Note: leave adsr_mod.fm_mod as-is.
+	}
+	else
+	{
+		lfo_mod.am_mod = OFF;
+
+		// Toggle adsr_mod.am_mod.
+		if(lfo_mod.fm_mod == OFF)
+		{
+			lfo_mod.fm_mod = ON;
+		}
+		else
+		{
+			lfo_mod.fm_mod = OFF;
+		}
+	}
+}
+
 
 void update_adsr_mod()
 {
