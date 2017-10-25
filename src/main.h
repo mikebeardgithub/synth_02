@@ -64,7 +64,7 @@ typedef enum button_type
 typedef enum filter_state
 {
 	nofilter,
-	lowpass,
+	lowpasstest,			// TODO: fix this -- calling it lowpass screws up naming a global variable lowpass
 	highpass,
 	bandpass
 }filter_state;

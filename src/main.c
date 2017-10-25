@@ -83,6 +83,8 @@ int main(void)
 	init_state();								//initialize the global state variable for the menu, filterstate, secondary VCO and modlulation
 	// display_new_menu();
 
+	biquad_setup();								// TODO: make sure filter is setup properly.
+
 	EVAL_AUDIO_Init( OUTPUT_DEVICE_AUTO, VOL, SAMPLERATE);
 	EVAL_AUDIO_Play(buffer_output, LENGTH_BUFFER);
 

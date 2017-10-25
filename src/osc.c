@@ -112,6 +112,10 @@ volatile uint16_t testflag = 0;
 
 volatile adsr_setting adsr_settings;
 
+// For filters.
+sf_biquad_state_st lowpass;
+// sf_biquad_state_st lowpass_test;
+
 void generate_waveforms(uint16_t start, uint16_t end)
 {
 	osc.vco_wav = vco_wave;				// VCO wave type.
@@ -417,6 +421,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 
 			buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_AWGN();
 
+			// TODO:
 			if(osc.fm_mod == ON)
 			{
 				// buffer_output[i] = osc.vco_amp + osc.vco_amp*gen_triangle_angle(theta_vco + osc.lfo_amp_fm*buffer_lfo_float[i] + 0.3f * buffer_adsr_fm[i]);
@@ -454,7 +459,10 @@ void generate_waveforms(uint16_t start, uint16_t end)
 		}
 	}
 
-	// biquad_setup(start, end);
+	// TODO: break setup into two functions.
+	// One initializes filter settings.
+	// The other calls the filter functions.
+	biquad_invoke(start, end);
 
 	theta_vco = fast_fmod(theta_vco, TWO_PI);
 	theta_vco2 = fast_fmod(theta_vco2, TWO_PI);
@@ -1085,15 +1093,22 @@ uint16_t pseudo_log(uint16_t x)
 	return (uint16_t) y2;
 }
 
-void biquad_setup(uint16_t start, uint16_t end)
+/*
+ * Prepare to filter by setting up filter type and settings.
+ * Then perform filter by calling sf_biquad_process. 
+*/
+void biquad_setup()
 {
-	// --------------------------------------------
 	// Try to filter with biquad.
-	uint16_t i = 0;
-	sf_biquad_state_st lowpass;
+	// sf_biquad_state_st lowpass;
+	// sf_lowpass(&lowpass_test, SAMPLERATE, 400.0f, 1.0f);
 	sf_lowpass(&lowpass, SAMPLERATE, 400.0f, 1.0f);
+}
 
-	// For biquad.
+void biquad_invoke(uint16_t start, uint16_t end)
+{
+	uint16_t i = 0;
+
 	// Need input and output buffers of type sf_sample_st.
 	sf_sample_st input[BUFF_LEN_HALF];
 	sf_sample_st output[BUFF_LEN_HALF];
@@ -1105,7 +1120,9 @@ void biquad_setup(uint16_t start, uint16_t end)
 		input[i].R = (float32_t) buffer_output[2*i+1];
 	}
 
-	// This introduces glitches. (But it seems to be filtering.)
+	// This WAS introducing glitches, but seemed to be filtering.
+	// But now, nothing comes out at all.
+	// sf_biquad_process(&lowpass_test, BUFF_LEN_HALF, input, output);
 	sf_biquad_process(&lowpass, BUFF_LEN_HALF, input, output);
 
 	// Convert output back into buffer_output[i] (ints).
@@ -1114,7 +1131,6 @@ void biquad_setup(uint16_t start, uint16_t end)
 		buffer_output[2*i] = (uint16_t) output[i].L;
 		buffer_output[2*i+1] = (uint16_t) output[i].R;
 	}
-	// --------------------------------------------
 }
 
 float32_t gen_AWGN()
@@ -1122,10 +1138,4 @@ float32_t gen_AWGN()
 	float32_t temp = (float32_t) rand() / RAND_MAX;
 	return temp;
 }
-
-
-
-
-
-
 
