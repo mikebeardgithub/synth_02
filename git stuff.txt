@@ -30,7 +30,7 @@ update the branch with the latest code
 
 change to master branch using "checkout"
 git merge [non-master branch name]	-m"Your message"
-git push -u origin master
+git push -u origin master									<--- This updates from the local master (origin) to the remote master.
 
 
 ---------------------------------------------------------------------------

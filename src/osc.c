@@ -113,8 +113,26 @@ volatile uint16_t testflag = 0;
 volatile adsr_setting adsr_settings;
 
 // For filters.
-sf_biquad_state_st lowpass;
+typedef struct
+{
+	float b0;
+	float b1;
+	float b2;
+	float a1;
+	float a2;
+	sf_sample_st xn1;
+	sf_sample_st xn2;
+	sf_sample_st yn1;
+	sf_sample_st yn2;
+} biquad_state;
+// sf_biquad_state_st lowpass;
 // sf_biquad_state_st lowpass_test;
+biquad_state lowpass;
+
+// Need input and output buffers of type sf_sample_st.
+sf_sample_st input[BUFF_LEN_HALF];
+sf_sample_st output[BUFF_LEN_HALF];
+
 
 void generate_waveforms(uint16_t start, uint16_t end)
 {
@@ -462,7 +480,7 @@ void generate_waveforms(uint16_t start, uint16_t end)
 	// TODO: break setup into two functions.
 	// One initializes filter settings.
 	// The other calls the filter functions.
-	biquad_invoke(start, end);
+	biquad_invoke2(start, end);
 
 	theta_vco = fast_fmod(theta_vco, TWO_PI);
 	theta_vco2 = fast_fmod(theta_vco2, TWO_PI);
@@ -1110,10 +1128,11 @@ void biquad_invoke(uint16_t start, uint16_t end)
 	uint16_t i = 0;
 
 	// Need input and output buffers of type sf_sample_st.
-	sf_sample_st input[BUFF_LEN_HALF];
-	sf_sample_st output[BUFF_LEN_HALF];
+	// sf_sample_st input[BUFF_LEN_HALF];
+	// sf_sample_st output[BUFF_LEN_HALF];
 
 	// Convert buffer_output[i] into input (floats).
+	// TODO: make sure buffer_output[] has up-to-date values. I think it does.
 	for(i = start/2; i < (end/2) ; i++)
 	{
 		input[i].L = (float32_t) buffer_output[2*i];
@@ -1139,3 +1158,119 @@ float32_t gen_AWGN()
 	return temp;
 }
 
+// Only call once before any audio processing has been done.
+void biquad_setup2()
+{
+
+	lowpass.xn1.L = 0.0f;
+	lowpass.xn1.R = 0.0f;
+
+	lowpass.xn2.L = 0.0f;
+	lowpass.xn2.R = 0.0f;
+
+	lowpass.yn1.L = 0.0f;
+	lowpass.yn1.R = 0.0f;
+
+	lowpass.yn2.L = 0.0f;
+	lowpass.yn2.R = 0.0f;
+
+	// TODO: declare a bunch of these as globals or in a struct.
+	// uint16_t rate = 48000;
+	float32_t cutoff = 400.0f;
+	float32_t resonance = 1.0f;
+
+	float32_t nyquist = SAMPLERATE * 0.5f;
+	cutoff = cutoff/nyquist;
+
+	// resonance = 10.0f ^ (resonance * 0.05f);          // convert resonance from dB to linear
+	resonance = powf(10.0f, resonance * 0.05f);
+	float32_t theta = PI * 2.0f * cutoff;
+	float32_t alpha = sin(theta) / (2.0f * resonance);	// TODO: use fast sin
+	float32_t cosw  = cos(theta);						// TODO: use fast cos
+	float32_t beta  = (1.0f - cosw) * 0.5f;
+	float32_t a0inv = 1.0f / (1.0f + alpha);
+
+	lowpass.b0 = a0inv * beta;
+	lowpass.b1 = a0inv * 2.0f * beta;
+	lowpass.b2 = a0inv * beta;
+	lowpass.a1 = a0inv * -2.0f * cosw;
+	lowpass.a2 = a0inv * (1.0f - alpha);
+}
+
+void biquad_invoke2(uint16_t start, uint16_t end)
+{
+	uint16_t i = 0;
+	float32_t L;
+	float32_t R;
+
+	float32_t b0 = lowpass.b0;
+	float32_t b1 = lowpass.b1;
+	float32_t b2 = lowpass.b2;
+	float32_t a1 = lowpass.a1;
+	float32_t a2 = lowpass.a2;
+
+	sf_sample_st xn0;
+	xn0.L = 0.0f;
+	xn0.R = 0.0f;
+	sf_sample_st xn1 = lowpass.xn1;
+	sf_sample_st xn2 = lowpass.xn2;
+	sf_sample_st yn1 = lowpass.yn1;
+	sf_sample_st yn2 = lowpass.yn2;
+
+	// Convert buffer_output[i] into input (floats).
+	// TODO: make sure buffer_output[] has up-to-date values. I think it does.
+	for(i = start/2; i < (end/2) ; i++)
+	{
+		input[i].L = (float32_t) buffer_output[2*i];
+		input[i].R = (float32_t) buffer_output[2*i+1];
+	}
+
+	// Loop for each sample
+	// TODO: make sure both left and right samples are being handled.
+	for(i = start; i < end; i++)
+	{
+	    // get the current sample
+	    // sf_sample_st xn0 = input[n];
+		xn0 = input[i];
+
+	    // the formula is the same for each channel
+		L =
+			b0 * xn0.L +
+			b1 * xn1.L +
+			b2 * xn2.L -
+			a1 * yn1.L -
+			a2 * yn2.L;
+
+		R =
+			b0 * xn0.R +
+			b1 * xn1.R +
+			b2 * xn2.R -
+			a1 * yn1.R -
+			a2 * yn2.R;
+
+		// save the result
+		output[i] = (sf_sample_st){ L, R };
+
+	    // save the result
+	    // output[n] = (sf_sample_st){ L, R };
+	    // output[i] = L;
+
+	    // slide everything down one sample
+	    xn2 = xn1;
+	    xn1 = xn0;
+	    yn2 = yn1;
+	    yn1 = output[i];
+	}
+
+	// Convert output back into buffer_output[i] (ints).
+	for(i = start/2; i < (end/2) ; i++)
+	{
+		buffer_output[2*i] = (uint16_t) output[i].L;
+		buffer_output[2*i+1] = (uint16_t) output[i].R;
+	}
+}
+
+//void biquad_process2(sf_biquad_state_st *state, int size, sf_sample_st *input, sf_sample_st *output)
+//{
+//
+//}
